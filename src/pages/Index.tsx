@@ -5,6 +5,8 @@ import Layout from '@/components/Layout';
 import Dashboard from '@/components/Dashboard';
 import ItemsManager from '@/components/ItemsManager';
 import CustomersManager from '@/components/CustomersManager';
+import BillingSystem from '@/components/BillingSystem';
+import BillsHistory from '@/components/BillsHistory';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -41,19 +43,9 @@ const Index = () => {
       case 'customers':
         return <CustomersManager />;
       case 'billing':
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold mb-4">Billing System</h2>
-            <p className="text-muted-foreground">Coming soon in the next update!</p>
-          </div>
-        );
+        return <BillingSystem />;
       case 'bills':
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold mb-4">Bills & Reports</h2>
-            <p className="text-muted-foreground">Coming soon in the next update!</p>
-          </div>
-        );
+        return <BillsHistory />;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
