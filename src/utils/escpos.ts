@@ -72,29 +72,31 @@ export function generateReceiptData(bill: any, businessInfo: any): string {
   }
   
   // Items header
-  receipt += '--------------------------------' + LF;
+  receipt += '================================' + LF;
   receipt += BOLD_ON;
-  receipt += padRight('Item', 20) + padRight('Qty', 6) + padRight('Rate', 8) + 'Total' + LF;
+  receipt += padRight('ITEM', 20) + padRight('QTY', 6) + padRight('RATE', 8) + 'TOTAL' + LF;
   receipt += BOLD_OFF;
-  receipt += '--------------------------------' + LF;
+  receipt += '================================' + LF;
   
   // Items
   bill.items.forEach((item: any) => {
     receipt += padRight(item.item_name, 20) + LF;
     receipt += padRight('', 20) + 
                padRight(item.quantity + ' ' + item.unit, 6) + 
-               padRight('₹' + item.unit_price.toFixed(2), 8) + 
-               '₹' + item.total_price.toFixed(2) + LF;
+               padRight(item.unit_price.toFixed(2), 8) + 
+               item.total_price.toFixed(2) + LF;
   });
   
-  receipt += '--------------------------------' + LF;
+  receipt += '================================' + LF;
   
   // Totals
-  receipt += padLeft('Subtotal: ₹' + bill.subtotal.toFixed(2), 32) + LF;
+  receipt += LF;
+  receipt += padLeft('Items: ' + bill.items.length, 32) + LF;
+  receipt += padLeft('Subtotal: ' + bill.subtotal.toFixed(2), 32) + LF;
   if (bill.tax_amount > 0) {
-    receipt += padLeft('Tax: ₹' + bill.tax_amount.toFixed(2), 32) + LF;
+    receipt += padLeft('Tax: ' + bill.tax_amount.toFixed(2), 32) + LF;
   }
-  receipt += BOLD_ON + padLeft('TOTAL: ₹' + bill.total_amount.toFixed(2), 32) + BOLD_OFF + LF;
+  receipt += BOLD_ON + padLeft('TOTAL: ' + bill.total_amount.toFixed(2), 32) + BOLD_OFF + LF;
   
   // Footer
   receipt += LF;

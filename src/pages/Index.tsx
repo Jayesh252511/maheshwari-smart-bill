@@ -7,6 +7,7 @@ import ItemsManager from '@/components/ItemsManager';
 import CustomersManager from '@/components/CustomersManager';
 import BillingSystem from '@/components/BillingSystem';
 import BillsHistory from '@/components/BillsHistory';
+import Reports from '@/components/Reports';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -44,8 +45,10 @@ const Index = () => {
         return <CustomersManager />;
       case 'billing':
         return <BillingSystem />;
-      case 'bills':
-        return <BillsHistory />;
+    case 'bills':
+      return <BillsHistory />;
+    case 'reports':
+      return <Reports />;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }

@@ -74,10 +74,7 @@ const BillingSystem: React.FC = () => {
       return;
     }
 
-    if (qty > item.stock) {
-      toast.error(`Only ${item.stock} ${item.unit} available in stock`);
-      return;
-    }
+    // Stock check removed as per user request
 
     const existingItemIndex = billItems.findIndex(bi => bi.item_id === selectedItem);
     
@@ -85,10 +82,7 @@ const BillingSystem: React.FC = () => {
       const updatedItems = [...billItems];
       const newQty = updatedItems[existingItemIndex].quantity + qty;
       
-      if (newQty > item.stock) {
-        toast.error(`Only ${item.stock} ${item.unit} available in stock`);
-        return;
-      }
+      // Stock check removed as per user request
       
       updatedItems[existingItemIndex].quantity = newQty;
       updatedItems[existingItemIndex].total_price = newQty * item.price;
@@ -119,10 +113,7 @@ const BillingSystem: React.FC = () => {
     const item = items.find(i => i.id === itemId);
     if (!item) return;
 
-    if (newQuantity > item.stock) {
-      toast.error(`Only ${item.stock} ${item.unit} available in stock`);
-      return;
-    }
+    // Stock check removed as per user request
 
     setBillItems(prev => prev.map(bi => 
       bi.item_id === itemId 
@@ -142,8 +133,20 @@ const BillingSystem: React.FC = () => {
     return { subtotal, taxAmount, total };
   };
 
-  const generateBillNumber = () => {
-    return `BILL-${Date.now()}`;
+  const generateBillNumber = async () => {
+    // Get the count of existing bills for this user to generate sequential bill numbers
+    const { data, error } = await supabase
+      .from('bills')
+      .select('id', { count: 'exact' })
+      .eq('user_id', user?.id);
+    
+    if (error) {
+      console.error('Error getting bill count:', error);
+      return `01`; // fallback to 01
+    }
+    
+    const billCount = (data?.length || 0) + 1;
+    return billCount.toString().padStart(2, '0');
   };
 
   const saveBill = async (): Promise<Bill | null> => {
@@ -163,7 +166,7 @@ const BillingSystem: React.FC = () => {
       if (!customer) throw new Error('Customer not found');
 
       const { subtotal, taxAmount, total } = calculateTotals();
-      const billNumber = generateBillNumber();
+      const billNumber = await generateBillNumber();
 
       // Create bill
       const { data: billData, error: billError } = await supabase
@@ -197,19 +200,7 @@ const BillingSystem: React.FC = () => {
 
       if (itemsError) throw itemsError;
 
-      // Update stock
-      for (const billItem of billItems) {
-        const item = items.find(i => i.id === billItem.item_id);
-        if (item) {
-          const newStock = item.stock - billItem.quantity;
-          const { error: stockError } = await supabase
-            .from('items')
-            .update({ stock: newStock })
-            .eq('id', billItem.item_id);
-
-          if (stockError) throw stockError;
-        }
-      }
+      // Stock update removed as per user request
 
       const bill: Bill = {
         id: billData.id,
@@ -389,7 +380,7 @@ const BillingSystem: React.FC = () => {
                 <SelectContent>
                   {items.map(item => (
                     <SelectItem key={item.id} value={item.id}>
-                      {item.name} (₹{item.price}/{item.unit}) - Stock: {item.stock}
+                      {item.name} ({item.price}/{item.unit})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -428,7 +419,7 @@ const BillingSystem: React.FC = () => {
                   <div className="flex-1">
                     <h4 className="font-medium">{item.item_name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      ₹{item.unit_price.toFixed(2)} per {item.unit}
+                      {item.unit_price.toFixed(2)} per {item.unit}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -448,7 +439,7 @@ const BillingSystem: React.FC = () => {
                       <Plus className="h-4 w-4" />
                     </Button>
                     <div className="w-20 text-right font-medium">
-                      ₹{item.total_price.toFixed(2)}
+                      {item.total_price.toFixed(2)}
                     </div>
                     <Button
                       variant="ghost"
@@ -487,18 +478,22 @@ const BillingSystem: React.FC = () => {
             </div>
             <div className="space-y-2 pt-4 border-t">
               <div className="flex justify-between">
+                <span>Items Count:</span>
+                <span>{billItems.length}</span>
+              </div>
+              <div className="flex justify-between">
                 <span>Subtotal:</span>
-                <span>₹{subtotal.toFixed(2)}</span>
+                <span>{subtotal.toFixed(2)}</span>
               </div>
               {taxAmount > 0 && (
                 <div className="flex justify-between">
                   <span>Tax ({taxRate}%):</span>
-                  <span>₹{taxAmount.toFixed(2)}</span>
+                  <span>{taxAmount.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-lg pt-2 border-t">
                 <span>Total:</span>
-                <span>₹{total.toFixed(2)}</span>
+                <span>{total.toFixed(2)}</span>
               </div>
             </div>
             <div className="flex gap-2 pt-4">

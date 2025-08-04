@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Download, Share, Receipt, Calendar, User, DollarSign } from 'lucide-react';
+import { Search, Eye, Download, Share, Receipt, Calendar, User, DollarSign, Edit } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -118,6 +118,11 @@ const BillsHistory: React.FC = () => {
     }
   };
 
+  const handleEditBill = (bill: Bill) => {
+    // For now, just show a message. This would typically navigate to an edit form
+    toast.info('Bill editing feature coming soon! You can view details and create a new similar bill.');
+  };
+
   const getTotalRevenue = () => {
     return bills.reduce((sum, bill) => sum + bill.total_amount, 0);
   };
@@ -167,7 +172,7 @@ const BillsHistory: React.FC = () => {
                 <DollarSign className="h-5 w-5 text-success" />
                 <div>
                   <p className="text-sm text-muted-foreground">Total Revenue</p>
-                  <p className="text-lg font-semibold text-foreground">₹{getTotalRevenue().toFixed(2)}</p>
+                  <p className="text-lg font-semibold text-foreground">{getTotalRevenue().toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -224,7 +229,7 @@ const BillsHistory: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2 text-sm font-medium">
                         <DollarSign className="h-4 w-4" />
-                        <span>₹{bill.total_amount.toFixed(2)}</span>
+                        <span>{bill.total_amount.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -233,13 +238,23 @@ const BillsHistory: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleViewDetails(bill)}
+                      title="View Details"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => handleEditBill(bill)}
+                      title="Edit Bill"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleDownloadPDF(bill)}
+                      title="Download PDF"
                     >
                       <Download className="h-4 w-4" />
                     </Button>
@@ -248,6 +263,7 @@ const BillsHistory: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleSharePDF(bill)}
+                        title="Share PDF"
                       >
                         <Share className="h-4 w-4" />
                       </Button>
@@ -294,10 +310,10 @@ const BillsHistory: React.FC = () => {
                       <div>
                         <p className="font-medium">{item.item_name}</p>
                         <p className="text-muted-foreground">
-                          {item.quantity} {item.unit} × ₹{item.unit_price.toFixed(2)}
+                          {item.quantity} {item.unit} × {item.unit_price.toFixed(2)}
                         </p>
                       </div>
-                      <p className="font-medium">₹{item.total_price.toFixed(2)}</p>
+                      <p className="font-medium">{item.total_price.toFixed(2)}</p>
                     </div>
                   ))}
                 </div>
@@ -306,18 +322,22 @@ const BillsHistory: React.FC = () => {
               {/* Totals */}
               <div className="space-y-2 pt-2 border-t">
                 <div className="flex justify-between text-sm">
+                  <span>Items:</span>
+                  <span>{selectedBill.items.length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
                   <span>Subtotal:</span>
-                  <span>₹{selectedBill.subtotal.toFixed(2)}</span>
+                  <span>{selectedBill.subtotal.toFixed(2)}</span>
                 </div>
                 {selectedBill.tax_amount > 0 && (
                   <div className="flex justify-between text-sm">
                     <span>Tax:</span>
-                    <span>₹{selectedBill.tax_amount.toFixed(2)}</span>
+                    <span>{selectedBill.tax_amount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold">
                   <span>Total:</span>
-                  <span>₹{selectedBill.total_amount.toFixed(2)}</span>
+                  <span>{selectedBill.total_amount.toFixed(2)}</span>
                 </div>
               </div>
 

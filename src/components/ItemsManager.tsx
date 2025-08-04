@@ -25,8 +25,7 @@ const ItemsManager: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    unit: 'pcs',
-    stock: ''
+    unit: 'patti'
   });
   const { user } = useAuth();
 
@@ -62,7 +61,7 @@ const ItemsManager: React.FC = () => {
         name: formData.name.trim(),
         price: parseFloat(formData.price),
         unit: formData.unit,
-        stock: parseInt(formData.stock),
+        stock: 999, // Default high stock since user doesn't want to manage stock
         user_id: user?.id
       };
 
@@ -85,7 +84,7 @@ const ItemsManager: React.FC = () => {
 
       setDialogOpen(false);
       setEditingItem(null);
-      setFormData({ name: '', price: '', unit: 'pcs', stock: '' });
+      setFormData({ name: '', price: '', unit: 'patti' });
       fetchItems();
     } catch (error) {
       console.error('Error saving item:', error);
@@ -98,8 +97,7 @@ const ItemsManager: React.FC = () => {
     setFormData({
       name: item.name,
       price: item.price.toString(),
-      unit: item.unit,
-      stock: item.stock.toString()
+      unit: item.unit
     });
     setDialogOpen(true);
   };
@@ -123,7 +121,7 @@ const ItemsManager: React.FC = () => {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', price: '', unit: 'pcs', stock: '' });
+    setFormData({ name: '', price: '', unit: 'patti' });
     setEditingItem(null);
   };
 
@@ -181,7 +179,7 @@ const ItemsManager: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price (₹)</Label>
+                  <Label htmlFor="price">Price</Label>
                   <Input
                     id="price"
                     type="number"
@@ -200,24 +198,10 @@ const ItemsManager: React.FC = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, unit: e.target.value }))}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="pcs">Pieces</option>
-                    <option value="kg">Kilograms</option>
-                    <option value="ltr">Liters</option>
+                    <option value="patti">Patti</option>
                     <option value="box">Box</option>
-                    <option value="mtr">Meters</option>
                   </select>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="stock">Stock Quantity</Label>
-                <Input
-                  id="stock"
-                  type="number"
-                  value={formData.stock}
-                  onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
-                  placeholder="0"
-                  required
-                />
               </div>
               <div className="flex gap-2">
                 <Button type="submit" className="flex-1">
@@ -261,10 +245,10 @@ const ItemsManager: React.FC = () => {
                     <h3 className="font-medium text-foreground">{item.name}</h3>
                     <div className="flex items-center gap-4 mt-1">
                       <span className="text-sm text-muted-foreground">
-                        ₹{item.price.toFixed(2)}/{item.unit}
+                        {item.price.toFixed(2)}/{item.unit}
                       </span>
-                      <span className={`text-sm ${item.stock <= 10 ? 'text-warning' : 'text-success'}`}>
-                        Stock: {item.stock}
+                      <span className="text-sm text-muted-foreground">
+                        {item.unit}
                       </span>
                     </div>
                   </div>

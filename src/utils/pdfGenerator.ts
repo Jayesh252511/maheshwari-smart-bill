@@ -79,8 +79,8 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any): Promise
   bill.items.forEach((item) => {
     doc.text(item.item_name, 20, y);
     doc.text(`${item.quantity} ${item.unit}`, 110, y);
-    doc.text(`₹${item.unit_price.toFixed(2)}`, 135, y);
-    doc.text(`₹${item.total_price.toFixed(2)}`, pageWidth - 20, y, { align: 'right' });
+    doc.text(`${item.unit_price.toFixed(2)}`, 135, y);
+    doc.text(`${item.total_price.toFixed(2)}`, pageWidth - 20, y, { align: 'right' });
     y += 7;
   });
   
@@ -90,20 +90,24 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any): Promise
   y += 10;
   
   // Totals
+  doc.text('Items:', pageWidth - 80, y);
+  doc.text(`${bill.items.length}`, pageWidth - 20, y, { align: 'right' });
+  y += 7;
+  
   doc.text('Subtotal:', pageWidth - 80, y);
-  doc.text(`₹${bill.subtotal.toFixed(2)}`, pageWidth - 20, y, { align: 'right' });
+  doc.text(`${bill.subtotal.toFixed(2)}`, pageWidth - 20, y, { align: 'right' });
   y += 7;
   
   if (bill.tax_amount > 0) {
     doc.text('Tax:', pageWidth - 80, y);
-    doc.text(`₹${bill.tax_amount.toFixed(2)}`, pageWidth - 20, y, { align: 'right' });
+    doc.text(`${bill.tax_amount.toFixed(2)}`, pageWidth - 20, y, { align: 'right' });
     y += 7;
   }
   
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.text('Total:', pageWidth - 80, y);
-  doc.text(`₹${bill.total_amount.toFixed(2)}`, pageWidth - 20, y, { align: 'right' });
+  doc.text(`${bill.total_amount.toFixed(2)}`, pageWidth - 20, y, { align: 'right' });
   
   // Footer
   y += 20;
