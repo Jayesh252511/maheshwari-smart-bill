@@ -10,6 +10,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill } from '@/types/bill';
+import { useLocalization } from '@/contexts/LocalizationContext';
+import BillEdit from '@/components/BillEdit';
 
 const BillsHistory: React.FC = () => {
   const [bills, setBills] = useState<Bill[]>([]);
@@ -17,7 +19,10 @@ const BillsHistory: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [editBill, setEditBill] = useState<Bill | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
   const { user } = useAuth();
+  const { t } = useLocalization();
 
   useEffect(() => {
     if (user) {
@@ -119,8 +124,8 @@ const BillsHistory: React.FC = () => {
   };
 
   const handleEditBill = (bill: Bill) => {
-    // For now, just show a message. This would typically navigate to an edit form
-    toast.info('Bill editing feature coming soon! You can view details and create a new similar bill.');
+    setEditBill(bill);
+    setEditOpen(true);
   };
 
   const getTotalRevenue = () => {
@@ -149,7 +154,7 @@ const BillsHistory: React.FC = () => {
       {/* Header with Stats */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-semibold text-foreground">Bills & Reports</h2>
+          <h2 className="text-xl font-semibold text-foreground">{t('bills')} & Reports</h2>
           <p className="text-sm text-muted-foreground">View and manage your billing history</p>
         </div>
 
@@ -160,7 +165,7 @@ const BillsHistory: React.FC = () => {
               <div className="flex items-center gap-3">
                 <Receipt className="h-5 w-5 text-primary" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Bills</p>
+                  <p className="text-sm text-muted-foreground">Total {t('bills')}</p>
                   <p className="text-lg font-semibold text-foreground">{bills.length}</p>
                 </div>
               </div>
@@ -184,7 +189,7 @@ const BillsHistory: React.FC = () => {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search bills by number or customer name..."
+          placeholder={`Search ${t('bills').toLowerCase()} by number or customer name...`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"
@@ -197,11 +202,11 @@ const BillsHistory: React.FC = () => {
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Receipt className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium text-foreground mb-2">
-              {bills.length === 0 ? 'No bills yet' : 'No bills found'}
+              {bills.length === 0 ? `No ${t('bills').toLowerCase()} yet` : `No ${t('bills').toLowerCase()} found`}
             </h3>
             <p className="text-sm text-muted-foreground text-center">
               {bills.length === 0 
-                ? 'Create your first bill to see it here'
+                ? `Create your first ${t('bills').toLowerCase()} to see it here`
                 : 'Try adjusting your search terms'
               }
             </p>
@@ -280,7 +285,7 @@ const BillsHistory: React.FC = () => {
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Bill Details</DialogTitle>
+            <DialogTitle>{t('bills')} Details</DialogTitle>
             <DialogDescription>
               {selectedBill?.bill_number}
             </DialogDescription>
@@ -289,21 +294,21 @@ const BillsHistory: React.FC = () => {
             <div className="space-y-4">
               {/* Customer Info */}
               <div>
-                <h4 className="font-medium mb-2">Customer Information</h4>
+                <h4 className="font-medium mb-2">{t('customers')} Information</h4>
                 <div className="space-y-1 text-sm">
                   <p><strong>Name:</strong> {selectedBill.customer_name}</p>
                   {selectedBill.customer_phone && (
-                    <p><strong>Phone:</strong> {selectedBill.customer_phone}</p>
+                    <p><strong>{t('phone')}:</strong> {selectedBill.customer_phone}</p>
                   )}
                   {selectedBill.customer_address && (
-                    <p><strong>Address:</strong> {selectedBill.customer_address}</p>
+                    <p><strong>{t('address')}:</strong> {selectedBill.customer_address}</p>
                   )}
                 </div>
               </div>
 
               {/* Items */}
               <div>
-                <h4 className="font-medium mb-2">Items</h4>
+                <h4 className="font-medium mb-2">{t('items')}</h4>
                 <div className="space-y-2">
                   {selectedBill.items.map((item, index) => (
                     <div key={index} className="flex justify-between text-sm border-b pb-2">
@@ -322,11 +327,11 @@ const BillsHistory: React.FC = () => {
               {/* Totals */}
               <div className="space-y-2 pt-2 border-t">
                 <div className="flex justify-between text-sm">
-                  <span>Items:</span>
+                  <span>{t('items')}:</span>
                   <span>{selectedBill.items.length}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>Subtotal:</span>
+                  <span>{t('subtotal')}:</span>
                   <span>{selectedBill.subtotal.toFixed(2)}</span>
                 </div>
                 {selectedBill.tax_amount > 0 && (
@@ -336,7 +341,7 @@ const BillsHistory: React.FC = () => {
                   </div>
                 )}
                 <div className="flex justify-between font-bold">
-                  <span>Total:</span>
+                  <span>{t('total')}:</span>
                   <span>{selectedBill.total_amount.toFixed(2)}</span>
                 </div>
               </div>
@@ -366,6 +371,19 @@ const BillsHistory: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Bill Edit Dialog */}
+      {editBill && (
+        <BillEdit
+          bill={editBill}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          onBillUpdated={() => {
+            fetchBills();
+            setEditBill(null);
+          }}
+        />
+      )}
     </div>
   );
 };
