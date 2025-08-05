@@ -36,73 +36,76 @@ export class ESCPOSCommands {
   static LINE_SPACING_TIGHT = ESCPOSCommands.ESC + '3' + '\x10';
 }
 
-export function generateReceiptData(bill: any, businessInfo: any): string {
+export function generateReceiptData(bill: any, businessInfo: any, t?: (key: string) => string): string {
   const { ESC, LF, INIT, BOLD_ON, BOLD_OFF, ALIGN_CENTER, ALIGN_LEFT, DOUBLE_SIZE_ON, NORMAL_SIZE, CUT_PAPER } = ESCPOSCommands;
   
   let receipt = INIT; // Initialize printer
   
-  // Header - Business Name
-  receipt += ALIGN_CENTER;
-  receipt += DOUBLE_SIZE_ON + BOLD_ON;
-  receipt += businessInfo.name || 'Maheshwari Agency';
-  receipt += NORMAL_SIZE + BOLD_OFF + LF;
+  // Header - Business Name (ALL BOLD)
+  receipt += ALIGN_CENTER + BOLD_ON;
+  receipt += DOUBLE_SIZE_ON;
+  receipt += (t ? t('maheshwariAgency') : 'MAHESHWARI AGENCY');
+  receipt += NORMAL_SIZE + LF;
   
-  if (businessInfo.address) {
+  if (businessInfo?.address) {
     receipt += businessInfo.address + LF;
   }
-  if (businessInfo.phone) {
+  if (businessInfo?.phone) {
     receipt += 'Tel: ' + businessInfo.phone + LF;
   }
   
   receipt += '================================' + LF;
   receipt += ALIGN_LEFT;
   
-  // Bill details
-  receipt += BOLD_ON + 'Bill No: ' + BOLD_OFF + bill.bill_number + LF;
-  receipt += BOLD_ON + 'Date: ' + BOLD_OFF + new Date(bill.created_at).toLocaleString() + LF;
+  // Bill details (ALL BOLD)
+  receipt += (t ? t('billNo') : 'Bill No') + ': ' + String(bill.bill_number).padStart(2, '0') + LF;
+  receipt += (t ? t('date') : 'Date') + ': ' + new Date(bill.created_at).toLocaleDateString() + LF;
   receipt += LF;
   
-  // Customer details
+  // Customer details (ALL BOLD)
   if (bill.customer_name) {
-    receipt += BOLD_ON + 'Customer: ' + BOLD_OFF + bill.customer_name + LF;
+    receipt += (t ? t('customer') : 'Customer') + ': ' + bill.customer_name + LF;
     if (bill.customer_phone) {
-      receipt += BOLD_ON + 'Phone: ' + BOLD_OFF + bill.customer_phone + LF;
+      receipt += (t ? t('phone') : 'Phone') + ': ' + bill.customer_phone + LF;
     }
     receipt += LF;
   }
   
-  // Items header
+  // Table format exactly like the image
   receipt += '================================' + LF;
-  receipt += BOLD_ON;
-  receipt += padRight('ITEM', 20) + padRight('QTY', 6) + padRight('RATE', 8) + 'TOTAL' + LF;
-  receipt += BOLD_OFF;
+  receipt += padRight(t ? t('itemName') : 'Item Name', 15) + ' | ' + 
+             padCenter(t ? t('quantity') : 'Quantity', 8) + ' | ' + 
+             padCenter(t ? t('priceUnit') : 'Price/Unit', 10) + ' | ' + 
+             padCenter(t ? t('amount') : 'Amount', 8) + LF;
   receipt += '================================' + LF;
   
-  // Items
+  // Items (ALL BOLD)
+  let totalQuantity = 0;
   bill.items.forEach((item: any) => {
-    receipt += padRight(item.item_name, 20) + LF;
-    receipt += padRight('', 20) + 
-               padRight(item.quantity + ' ' + item.unit, 6) + 
-               padRight(item.unit_price.toFixed(2), 8) + 
-               item.total_price.toFixed(2) + LF;
+    totalQuantity += item.quantity;
+    receipt += padRight(item.item_name, 15) + ' | ' + 
+               padCenter(item.quantity.toString(), 8) + ' | ' + 
+               padCenter(item.unit_price.toFixed(2), 10) + ' | ' + 
+               padCenter(item.total_price.toFixed(2), 8) + LF;
   });
   
   receipt += '================================' + LF;
-  
-  // Totals
+  receipt += padRight(t ? t('total') : 'Total', 15) + ' | ' + 
+             padCenter(totalQuantity.toString(), 8) + ' | ' + 
+             padCenter('', 10) + ' | ' + 
+             padCenter(bill.total_amount.toFixed(2), 8) + LF;
+  receipt += '================================' + LF;
   receipt += LF;
-  receipt += padLeft('Items: ' + bill.items.length, 32) + LF;
-  receipt += padLeft('Subtotal: ' + bill.subtotal.toFixed(2), 32) + LF;
-  if (bill.tax_amount > 0) {
-    receipt += padLeft('Tax: ' + bill.tax_amount.toFixed(2), 32) + LF;
-  }
-  receipt += BOLD_ON + padLeft('TOTAL: ' + bill.total_amount.toFixed(2), 32) + BOLD_OFF + LF;
   
-  // Footer
+  // Summary (ALL BOLD)
+  receipt += padRight('', 25) + (t ? t('subtotal') : 'Sub Total') + ' : ' + bill.subtotal.toFixed(2) + LF;
+  receipt += padRight('', 25) + (t ? t('total') : 'Total') + ' : ' + bill.total_amount.toFixed(2) + LF;
+  
+  // Footer (ALL BOLD)
   receipt += LF;
   receipt += ALIGN_CENTER;
-  receipt += 'Thank you for your business!' + LF;
-  receipt += LF + LF;
+  receipt += (t ? t('thankYou') : 'Thank you for your business!') + LF;
+  receipt += BOLD_OFF + LF + LF;
   
   // Cut paper
   receipt += CUT_PAPER;
@@ -116,4 +119,11 @@ function padRight(str: string, length: number): string {
 
 function padLeft(str: string, length: number): string {
   return str.slice(0, length).padStart(length, ' ');
+}
+
+function padCenter(str: string, length: number): string {
+  const totalPad = length - str.length;
+  const leftPad = Math.floor(totalPad / 2);
+  const rightPad = totalPad - leftPad;
+  return ' '.repeat(leftPad) + str + ' '.repeat(rightPad);
 }

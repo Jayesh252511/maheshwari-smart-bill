@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { bluetoothPrinter } from '@/utils/bluetoothPrinter';
 import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill, BillItem, Customer, Item } from '@/types/bill';
+import { useLocalization } from '@/contexts/LocalizationContext';
 
 const BillingSystem: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -27,6 +28,7 @@ const BillingSystem: React.FC = () => {
   const [currentBill, setCurrentBill] = useState<Bill | null>(null);
   const [printerConnected, setPrinterConnected] = useState(false);
   const { user } = useAuth();
+  const { t } = useLocalization();
 
   useEffect(() => {
     if (user) {
@@ -254,7 +256,7 @@ const BillingSystem: React.FC = () => {
         phone: 'Your Phone Number'
       };
 
-      await bluetoothPrinter.printReceipt(currentBill, businessInfo);
+      await bluetoothPrinter.printReceipt(currentBill, businessInfo, t);
       toast.success('Receipt printed successfully!');
       resetBill();
       setPrintDialogOpen(false);
@@ -274,7 +276,7 @@ const BillingSystem: React.FC = () => {
         phone: 'Your Phone Number'
       };
 
-      await downloadPDF(currentBill, businessInfo);
+      await downloadPDF(currentBill, businessInfo, undefined, t);
       toast.success('PDF downloaded successfully!');
     } catch (error) {
       console.error('PDF error:', error);
@@ -292,7 +294,7 @@ const BillingSystem: React.FC = () => {
         phone: 'Your Phone Number'
       };
 
-      await sharePDF(currentBill, businessInfo);
+      await sharePDF(currentBill, businessInfo, t);
       toast.success('PDF shared successfully!');
     } catch (error) {
       console.error('Share error:', error);

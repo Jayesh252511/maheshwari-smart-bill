@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import { Bill } from '@/types/bill';
 
-export async function generatePDFInvoice(bill: Bill, businessInfo: any): Promise<Blob> {
+export async function generatePDFInvoice(bill: Bill, businessInfo: any, t?: (key: string) => string): Promise<Blob> {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.width;
   let y = 20;
@@ -9,7 +9,7 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any): Promise
   // Header - Business Name
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text(businessInfo.name || 'Maheshwari Agency', pageWidth / 2, y, { align: 'center' });
+  doc.text(businessInfo.name || (t ? t('maheshwariAgency') : 'MAHESHWARI AGENCY'), pageWidth / 2, y, { align: 'center' });
   y += 10;
   
   doc.setFontSize(12);
@@ -37,8 +37,8 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any): Promise
   // Bill details
   doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Bill No: ${bill.bill_number}`, 20, y);
-  doc.text(`Date: ${new Date(bill.created_at).toLocaleDateString()}`, pageWidth - 20, y, { align: 'right' });
+  doc.text(`${t ? t('billNo') : 'Bill No'}: ${String(bill.bill_number).padStart(2, '0')}`, 20, y);
+  doc.text(`${t ? t('date') : 'Date'}: ${new Date(bill.created_at).toLocaleDateString()}`, pageWidth - 20, y, { align: 'right' });
   y += 15;
   
   // Customer details
@@ -64,10 +64,10 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any): Promise
   // Items table header
   const tableStartY = y;
   doc.setFont('helvetica', 'bold');
-  doc.text('Item', 20, y);
-  doc.text('Qty', 110, y);
-  doc.text('Rate', 135, y);
-  doc.text('Amount', pageWidth - 20, y, { align: 'right' });
+  doc.text(t ? t('itemName') : 'Item', 20, y);
+  doc.text(t ? t('quantity') : 'Qty', 110, y);
+  doc.text(t ? t('price') : 'Rate', 135, y);
+  doc.text(t ? t('amount') : 'Amount', pageWidth - 20, y, { align: 'right' });
   y += 5;
   
   // Table header line
@@ -94,7 +94,7 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any): Promise
   doc.text(`${bill.items.length}`, pageWidth - 20, y, { align: 'right' });
   y += 7;
   
-  doc.text('Subtotal:', pageWidth - 80, y);
+  doc.text(`${t ? t('subtotal') : 'Subtotal'}:`, pageWidth - 80, y);
   doc.text(`${bill.subtotal.toFixed(2)}`, pageWidth - 20, y, { align: 'right' });
   y += 7;
   
@@ -106,20 +106,20 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any): Promise
   
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
-  doc.text('Total:', pageWidth - 80, y);
+  doc.text(`${t ? t('total') : 'Total'}:`, pageWidth - 80, y);
   doc.text(`${bill.total_amount.toFixed(2)}`, pageWidth - 20, y, { align: 'right' });
   
   // Footer
   y += 20;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'italic');
-  doc.text('Thank you for your business!', pageWidth / 2, y, { align: 'center' });
+  doc.text(t ? t('thankYou') : 'Thank you for your business!', pageWidth / 2, y, { align: 'center' });
   
   return doc.output('blob');
 }
 
-export async function downloadPDF(bill: Bill, businessInfo: any, filename?: string): Promise<void> {
-  const pdfBlob = await generatePDFInvoice(bill, businessInfo);
+export async function downloadPDF(bill: Bill, businessInfo: any, filename?: string, t?: (key: string) => string): Promise<void> {
+  const pdfBlob = await generatePDFInvoice(bill, businessInfo, t);
   const url = URL.createObjectURL(pdfBlob);
   const link = document.createElement('a');
   link.href = url;
@@ -130,12 +130,12 @@ export async function downloadPDF(bill: Bill, businessInfo: any, filename?: stri
   URL.revokeObjectURL(url);
 }
 
-export async function sharePDF(bill: Bill, businessInfo: any): Promise<void> {
+export async function sharePDF(bill: Bill, businessInfo: any, t?: (key: string) => string): Promise<void> {
   if (!navigator.share) {
     throw new Error('Web Share API is not supported in this browser');
   }
   
-  const pdfBlob = await generatePDFInvoice(bill, businessInfo);
+  const pdfBlob = await generatePDFInvoice(bill, businessInfo, t);
   const file = new File([pdfBlob], `invoice-${bill.bill_number}.pdf`, { type: 'application/pdf' });
   
   await navigator.share({

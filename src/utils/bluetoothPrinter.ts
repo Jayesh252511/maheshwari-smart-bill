@@ -174,13 +174,13 @@ class BluetoothPrinterManager {
     }
   }
   
-  async printReceipt(billData: any, businessInfo: any): Promise<void> {
+  async printReceipt(billData: any, businessInfo: any, t?: (key: string) => string): Promise<void> {
     if (!this.printer || !this.printer.connected || !this.printer.characteristic) {
       throw new Error('No printer connected. Please connect to a printer first.');
     }
     
     try {
-      const receiptData = generateReceiptData(billData, businessInfo);
+      const receiptData = generateReceiptData(billData, businessInfo, t);
       const encoder = new TextEncoder();
       const data = encoder.encode(receiptData);
       
