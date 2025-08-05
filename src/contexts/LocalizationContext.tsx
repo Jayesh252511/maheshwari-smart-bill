@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-console.log('LocalizationContext module loading');
 export type Language = 'en' | 'hi' | 'mr';
 
 interface Translations {
@@ -63,8 +62,6 @@ const LocalizationContext = createContext<LocalizationContextType | undefined>(u
 
 export const LocalizationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('en');
-  
-  console.log('LocalizationProvider rendering with language:', language);
 
   useEffect(() => {
     // Load saved language from localStorage
@@ -100,9 +97,7 @@ export const LocalizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
 export const useLocalization = () => {
   const context = useContext(LocalizationContext);
-  console.log('useLocalization called, context:', context);
   if (context === undefined) {
-    console.error('LocalizationContext is undefined - provider not found');
     throw new Error('useLocalization must be used within a LocalizationProvider');
   }
   return context;

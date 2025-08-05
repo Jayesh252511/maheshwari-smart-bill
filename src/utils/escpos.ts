@@ -44,7 +44,7 @@ export function generateReceiptData(bill: any, businessInfo: any, t?: (key: stri
   // Header - Business Name (ALL BOLD)
   receipt += ALIGN_CENTER + BOLD_ON;
   receipt += DOUBLE_SIZE_ON;
-  receipt += (t ? t('maheshwariAgency') : 'MAHESHWARI AGENCY');
+  receipt += 'MAHESHWARI AGENCY';
   receipt += NORMAL_SIZE + LF;
   
   if (businessInfo?.address) {
@@ -55,56 +55,52 @@ export function generateReceiptData(bill: any, businessInfo: any, t?: (key: stri
   }
   
   receipt += '================================' + LF;
+  receipt += LF;
+  receipt += 'INVOICE' + LF;
+  receipt += LF;
   receipt += ALIGN_LEFT;
   
   // Bill details (ALL BOLD)
-  receipt += (t ? t('billNo') : 'Bill No') + ': ' + String(bill.bill_number).padStart(2, '0') + LF;
-  receipt += (t ? t('date') : 'Date') + ': ' + new Date(bill.created_at).toLocaleDateString() + LF;
+  receipt += 'Bill No: ' + String(bill.bill_number).padStart(2, '0');
+  receipt += '          Date: ' + new Date(bill.created_at).toLocaleDateString() + LF;
   receipt += LF;
   
   // Customer details (ALL BOLD)
   if (bill.customer_name) {
-    receipt += (t ? t('customer') : 'Customer') + ': ' + bill.customer_name + LF;
+    receipt += 'Bill To:' + LF;
+    receipt += bill.customer_name + LF;
     if (bill.customer_phone) {
-      receipt += (t ? t('phone') : 'Phone') + ': ' + bill.customer_phone + LF;
+      receipt += 'Phone: ' + bill.customer_phone + LF;
     }
     receipt += LF;
   }
   
-  // Table format exactly like the image
-  receipt += '================================' + LF;
-  receipt += padRight(t ? t('itemName') : 'Item Name', 15) + ' | ' + 
-             padCenter(t ? t('quantity') : 'Quantity', 8) + ' | ' + 
-             padCenter(t ? t('priceUnit') : 'Price/Unit', 10) + ' | ' + 
-             padCenter(t ? t('amount') : 'Amount', 8) + LF;
+  // Table header - exactly as shown in image
+  receipt += padRight('Item Name', 15) + padRight('Quantity', 10) + padRight('Price/Unit', 10) + 'Amount' + LF;
   receipt += '================================' + LF;
   
-  // Items (ALL BOLD)
+  // Items - clean format
   let totalQuantity = 0;
   bill.items.forEach((item: any) => {
     totalQuantity += item.quantity;
-    receipt += padRight(item.item_name, 15) + ' | ' + 
-               padCenter(item.quantity.toString(), 8) + ' | ' + 
-               padCenter(item.unit_price.toFixed(2), 10) + ' | ' + 
-               padCenter(item.total_price.toFixed(2), 8) + LF;
+    receipt += padRight(item.item_name, 15) + 
+               padRight(item.quantity + ' ' + item.unit, 10) + 
+               padRight(item.unit_price.toFixed(2), 10) + 
+               item.total_price.toFixed(2) + LF;
   });
   
   receipt += '================================' + LF;
-  receipt += padRight(t ? t('total') : 'Total', 15) + ' | ' + 
-             padCenter(totalQuantity.toString(), 8) + ' | ' + 
-             padCenter('', 10) + ' | ' + 
-             padCenter(bill.total_amount.toFixed(2), 8) + LF;
-  receipt += '================================' + LF;
-  receipt += LF;
   
-  // Summary (ALL BOLD)
-  receipt += padRight('', 25) + (t ? t('subtotal') : 'Sub Total') + ' : ' + bill.subtotal.toFixed(2) + LF;
-  receipt += padRight('', 25) + (t ? t('total') : 'Total') + ' : ' + bill.total_amount.toFixed(2) + LF;
+  // Summary section - clean and aligned
+  receipt += LF;
+  receipt += padRight('Items:', 20) + totalQuantity + LF;
+  receipt += padRight('Subtotal:', 20) + bill.subtotal.toFixed(2) + LF;
+  receipt += padRight('Total:', 20) + bill.total_amount.toFixed(2) + LF;
   
   // Footer (ALL BOLD)
   receipt += LF;
   receipt += ALIGN_CENTER;
-  receipt += (t ? t('thankYou') : 'Thank you for your business!') + LF;
+  receipt += 'Thank you for your business!' + LF;
   receipt += BOLD_OFF + LF + LF;
   
   // Cut paper
