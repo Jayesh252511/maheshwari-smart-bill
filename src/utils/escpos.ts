@@ -101,7 +101,7 @@ export function generateReceiptData(bill: any, businessInfo: any, t?: (key: stri
   // Footer (ALL BOLD)
   receipt += LF;
   receipt += ALIGN_CENTER;
-  receipt += 'Thank you for your business!' + LF;
+  receipt += 'Thank for coming and visit again' + LF;
   receipt += BOLD_OFF + LF + LF;
   
   // Cut paper
