@@ -23,41 +23,48 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Maheshwari Agency' }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-warm">
-      {/* Traditional Header */}
-      <header className="bg-card/95 backdrop-blur-sm border-b-2 border-accent/20 shadow-traditional sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-warm animate-fade-in">
+      {/* Creative Traditional Header */}
+      <header className="bg-card/95 backdrop-blur-sm border-b-2 border-accent/20 shadow-traditional sticky top-0 z-50 animate-slide-in-right">
         <div className="flex items-center justify-between p-6">
           <div className="flex items-center gap-4">
-            <div className="bg-gradient-primary rounded-xl p-3 shadow-warm">
+            <div className="bg-gradient-primary rounded-xl p-3 shadow-warm hover-glow animate-bounce-gentle">
               <Calculator className="h-7 w-7 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground tracking-wide">{title}</h1>
-              <p className="text-sm text-muted-foreground font-medium">
+            <div className="animate-scale-in">
+              <h1 className="text-2xl traditional-heading gradient-text">{title}</h1>
+              <p className="text-sm elegant-text font-medium">
                 {user?.email}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 animate-fade-in">
             <LanguageSelector />
             <Button
               variant="ghost"
               size="icon"
               onClick={handleSignOut}
-              className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover-glow transition-all duration-300"
             >
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </div>
+        
+        {/* Decorative line */}
+        <div className="h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent"></div>
       </header>
 
-      {/* Traditional Main Content */}
-      <main className="p-6 pb-24">
+      {/* Enhanced Main Content */}
+      <main className="p-6 pb-24 animate-fade-in">
         <div className="max-w-7xl mx-auto">
           {children}
         </div>
       </main>
+      
+      {/* Floating decorative elements */}
+      <div className="fixed top-20 right-10 w-20 h-20 bg-accent/10 rounded-full blur-xl animate-glow pointer-events-none"></div>
+      <div className="fixed bottom-20 left-10 w-16 h-16 bg-primary/10 rounded-full blur-lg animate-bounce-gentle pointer-events-none"></div>
     </div>
   );
 };

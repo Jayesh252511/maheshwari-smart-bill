@@ -119,6 +119,28 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
+  }
+}
+
+@layer components {
+  .creative-card {
+    @apply bg-card/80 backdrop-blur-sm border-2 border-accent/20 rounded-xl shadow-traditional hover:shadow-warm transition-all duration-300 hover:scale-[1.02];
+  }
+  
+  .traditional-heading {
+    @apply font-playfair font-bold text-foreground tracking-wide;
+  }
+  
+  .elegant-text {
+    @apply font-cormorant text-muted-foreground leading-relaxed;
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-[0_0_30px_hsl(var(--accent)/0.3)] hover:scale-[1.02];
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
   }
 }
