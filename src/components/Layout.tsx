@@ -23,38 +23,40 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Maheshwari Agency' }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-50">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary rounded-lg p-2">
-              <Calculator className="h-6 w-6 text-primary-foreground" />
+    <div className="min-h-screen bg-gradient-warm">
+      {/* Traditional Header */}
+      <header className="bg-card/95 backdrop-blur-sm border-b-2 border-accent/20 shadow-traditional sticky top-0 z-50">
+        <div className="flex items-center justify-between p-6">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-primary rounded-xl p-3 shadow-warm">
+              <Calculator className="h-7 w-7 text-primary-foreground" />
             </div>
-          <div>
-            <h1 className="font-semibold text-foreground">{title}</h1>
-            <p className="text-xs text-muted-foreground">
-              {user?.email}
-            </p>
+            <div>
+              <h1 className="text-xl font-bold text-foreground tracking-wide">{title}</h1>
+              <p className="text-sm text-muted-foreground font-medium">
+                {user?.email}
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <LanguageSelector />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSignOut}
-            className="text-muted-foreground"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
-        </div>
+          <div className="flex items-center gap-3">
+            <LanguageSelector />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSignOut}
+              className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="p-4 pb-20">
-        {children}
+      {/* Traditional Main Content */}
+      <main className="p-6 pb-24">
+        <div className="max-w-7xl mx-auto">
+          {children}
+        </div>
       </main>
     </div>
   );
