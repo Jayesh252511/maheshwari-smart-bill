@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,7 @@ import { bluetoothPrinter } from '@/utils/bluetoothPrinter';
 import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill, BillItem, Customer, Item } from '@/types/bill';
 import { useLocalization } from '@/contexts/LocalizationContext';
+import AIVoiceAssistant from './AIVoiceAssistant';
 
 const BillingSystem: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -312,6 +313,63 @@ const BillingSystem: React.FC = () => {
     fetchData(); // Refresh data to update stock
   };
 
+  const handleVoiceAddItems = useCallback((voiceItems: { name: string; quantity: number }[]) => {
+    voiceItems.forEach(voiceItem => {
+      // Find matching item (case-insensitive)
+      const matchingItem = items.find(item => 
+        item.name.toLowerCase().includes(voiceItem.name.toLowerCase()) ||
+        voiceItem.name.toLowerCase().includes(item.name.toLowerCase())
+      );
+      
+      if (matchingItem) {
+        setSelectedItem(matchingItem.id);
+        setQuantity(voiceItem.quantity.toString());
+        
+        // Simulate click to add item
+        setTimeout(() => {
+          const qty = voiceItem.quantity;
+          if (qty <= 0) return;
+
+          const existingItemIndex = billItems.findIndex(bi => bi.item_id === matchingItem.id);
+          
+          if (existingItemIndex >= 0) {
+            const updatedItems = [...billItems];
+            const newQty = updatedItems[existingItemIndex].quantity + qty;
+            updatedItems[existingItemIndex].quantity = newQty;
+            updatedItems[existingItemIndex].total_price = newQty * matchingItem.price;
+            setBillItems(updatedItems);
+          } else {
+            const billItem: BillItem = {
+              id: Date.now().toString() + Math.random(),
+              item_id: matchingItem.id,
+              item_name: matchingItem.name,
+              quantity: qty,
+              unit_price: matchingItem.price,
+              total_price: qty * matchingItem.price,
+              unit: matchingItem.unit
+            };
+            setBillItems(prev => [...prev, billItem]);
+          }
+          
+          setSelectedItem('');
+          setQuantity('1');
+        }, 100);
+      }
+    });
+  }, [items, billItems]);
+
+  const handleVoiceSelectCustomer = useCallback((customerName: string) => {
+    const matchingCustomer = customers.find(customer =>
+      customer.name.toLowerCase().includes(customerName.toLowerCase()) ||
+      customerName.toLowerCase().includes(customer.name.toLowerCase())
+    );
+    
+    if (matchingCustomer) {
+      setSelectedCustomer(matchingCustomer.id);
+      toast.success(`Selected customer: ${matchingCustomer.name}`);
+    }
+  }, [customers]);
+
   const { subtotal, taxAmount, total } = calculateTotals();
 
   if (loading) {
@@ -327,8 +385,9 @@ const BillingSystem: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 space-y-6">
+        {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Create Bill</h2>
@@ -565,6 +624,15 @@ const BillingSystem: React.FC = () => {
           </CardContent>
         </Card>
       )}
+      </div>
+
+      {/* AI Voice Assistant Sidebar */}
+      <div className="space-y-6">
+        <AIVoiceAssistant 
+          onAddItems={handleVoiceAddItems}
+          onSelectCustomer={handleVoiceSelectCustomer}
+        />
+      </div>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import LanguageSelector from '@/components/LanguageSelector';
 interface LayoutProps {
   children: React.ReactNode;
   title?: string;
+  onNavigate?: (page: string) => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, title = 'Maheshwari Agency' }) => {
