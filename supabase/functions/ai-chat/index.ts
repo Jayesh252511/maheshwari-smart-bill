@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, type, userId } = await req.json();
+    const { message, type, userId, availableItems } = await req.json();
     
     if (!message) {
       throw new Error('Message is required');
@@ -93,6 +93,30 @@ Examples:
 - "Add 5 apples" → {"action": "add_items", "items": [{"name": "apples", "quantity": 5}], "response": "Added 5 apples to the bill"}
 - "Add 3 coffees for John" → {"action": "add_items", "items": [{"name": "coffee", "quantity": 3}], "customer": "John", "response": "Added 3 coffees for customer John"}`;
         break;
+        
+      case 'voice_billing_numbered':
+        const itemsList = availableItems ? availableItems.map((item: any, index: number) => `${index + 1}. ${item.name} ($${item.price})`).join('\n') : '';
+        systemPrompt = `You are an AI assistant for a point-of-sale system. Parse voice commands using ITEM NUMBERS.
+
+Available items with numbers:
+${itemsList}
+
+Parse commands like "add item 5, 3 qty" or "add item 1, 2 qty":
+- Extract item numbers and quantities
+- ONLY use items from the numbered list above
+- Reject any item numbers that don't exist in the list
+
+Respond in JSON format ONLY:
+{
+  "action": "add_items" | "unclear",
+  "items": [{"name": "exact_item_name_from_list", "quantity": number}],
+  "response": "confirmation_message"
+}
+
+Examples:
+- "add item 1, 3 qty" → {"action": "add_items", "items": [{"name": "[first item name]", "quantity": 3}], "response": "Added 3 [item name] to the bill"}
+- "add item 99, 1 qty" → {"action": "unclear", "response": "Item 99 not found. Please use item numbers 1-${availableItems?.length || 0}"}`;
+        break;
 
       case 'business_insights':
         systemPrompt = `You are an AI business analyst for a point-of-sale system. Analyze the provided business data and give actionable insights.
@@ -162,7 +186,7 @@ Be friendly, helpful, and provide step-by-step guidance when needed.`;
 
     // Try to parse as JSON for voice_billing, otherwise return as text
     let parsedResponse;
-    if (type === 'voice_billing') {
+    if (type === 'voice_billing' || type === 'voice_billing_numbered') {
       try {
         parsedResponse = JSON.parse(aiResponse);
       } catch {

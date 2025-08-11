@@ -10,16 +10,19 @@ import { useAuth } from '@/contexts/AuthContext';
 interface AIVoiceAssistantProps {
   onAddItems?: (items: { name: string; quantity: number }[]) => void;
   onSelectCustomer?: (customerName: string) => void;
+  availableItems?: { id: string; name: string; price: number }[];
 }
 
 const AIVoiceAssistant: React.FC<AIVoiceAssistantProps> = ({ 
   onAddItems, 
-  onSelectCustomer 
+  onSelectCustomer,
+  availableItems = []
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastCommand, setLastCommand] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showItems, setShowItems] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
@@ -80,10 +83,11 @@ const AIVoiceAssistant: React.FC<AIVoiceAssistantProps> = ({
       
       mediaRecorderRef.current.start();
       setIsRecording(true);
+      setShowItems(true);
       
       toast({
         title: "Listening...",
-        description: "Speak your billing command",
+        description: "Say 'add item [number], [quantity] qty'",
       });
     } catch (error) {
       console.error('Error starting recording:', error);
@@ -100,6 +104,7 @@ const AIVoiceAssistant: React.FC<AIVoiceAssistantProps> = ({
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       setIsProcessing(true);
+      setShowItems(false);
     }
   }, [isRecording]);
 
@@ -120,13 +125,14 @@ const AIVoiceAssistant: React.FC<AIVoiceAssistantProps> = ({
       const transcribedText = transcriptionData.text;
       console.log('Transcribed:', transcribedText);
       
-      // Send to AI for processing
+      // Send to AI for processing with available items
       const { data: aiData, error: aiError } = await supabase.functions
         .invoke('ai-chat', {
           body: { 
             message: transcribedText,
-            type: 'voice_billing',
-            userId: user?.id
+            type: 'voice_billing_numbered',
+            userId: user?.id,
+            availableItems: availableItems
           }
         });
 
@@ -210,6 +216,20 @@ const AIVoiceAssistant: React.FC<AIVoiceAssistantProps> = ({
           )}
         </div>
         
+        {showItems && availableItems.length > 0 && (
+          <div className="p-3 bg-muted rounded-md max-h-40 overflow-y-auto">
+            <p className="text-sm font-semibold mb-2">Available Items:</p>
+            <div className="grid grid-cols-1 gap-1">
+              {availableItems.map((item, index) => (
+                <div key={item.id} className="text-xs flex justify-between">
+                  <span>{index + 1}. {item.name}</span>
+                  <span className="text-muted-foreground">${item.price}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
         {lastCommand && (
           <div className="p-3 bg-muted rounded-md">
             <p className="text-sm text-muted-foreground mb-1">Last command:</p>
@@ -219,7 +239,7 @@ const AIVoiceAssistant: React.FC<AIVoiceAssistantProps> = ({
         
         <div className="text-xs text-muted-foreground text-center">
           <p>Try saying:</p>
-          <p>"Add 5 apples" or "Add 3 coffees for John"</p>
+          <p>"Add item 1, 3 qty" or "Add item 5, 2 qty"</p>
         </div>
       </CardContent>
     </Card>

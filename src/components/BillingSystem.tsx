@@ -631,6 +631,7 @@ const BillingSystem: React.FC = () => {
         <AIVoiceAssistant 
           onAddItems={handleVoiceAddItems}
           onSelectCustomer={handleVoiceSelectCustomer}
+          availableItems={items.map(item => ({ id: item.id, name: item.name, price: item.price }))}
         />
       </div>
     </div>
