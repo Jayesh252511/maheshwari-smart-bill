@@ -1,17 +1,12 @@
 project_id = "bzugdsinavlttuosoxos"
 
-[api]
+[auth]
 enabled = true
-port = 54321
-schemas = ["public", "graphql_public"]
-extra_search_path = ["public", "extensions"]
-max_rows = 1000
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
 
-[functions.voice-to-text]
-verify_jwt = true
+[database]
+enabled = true
 
-[functions.ai-chat]
-verify_jwt = true
-
-[functions.text-to-speech]
-verify_jwt = true
+[storage]
+enabled = true

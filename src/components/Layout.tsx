@@ -5,6 +5,8 @@ import { LogOut, Calculator } from 'lucide-react';
 import { toast } from 'sonner';
 import LanguageSelector from '@/components/LanguageSelector';
 
+import { HelpCircle, CreditCard } from "lucide-react";
+
 interface LayoutProps {
   children: React.ReactNode;
   title?: string;
@@ -42,6 +44,24 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Maheshwari Agency' }
           <div className="flex items-center gap-3 animate-fade-in">
             <LanguageSelector />
             <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open("https://wa.me/918605601801", "_blank")}
+              className="flex items-center gap-2"
+            >
+              <HelpCircle className="h-4 w-4" />
+              Help
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.href = '/pricing'}
+              className="flex items-center gap-2"
+            >
+              <CreditCard className="h-4 w-4" />
+              Plans
+            </Button>
+            <Button
               variant="ghost"
               size="icon"
               onClick={handleSignOut}
@@ -69,5 +89,4 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Maheshwari Agency' }
     </div>
   );
 };
-
 export default Layout;

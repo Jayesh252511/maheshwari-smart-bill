@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,10 @@ import { bluetoothPrinter } from '@/utils/bluetoothPrinter';
 import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill, BillItem, Customer, Item } from '@/types/bill';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import AIVoiceAssistant from './AIVoiceAssistant';
+import { SubscriptionStatus } from './SubscriptionStatus';
+import { UpgradeModal } from './UpgradeModal';
+import { useSubscription } from '@/hooks/useSubscription';
+
 
 const BillingSystem: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -28,8 +31,19 @@ const BillingSystem: React.FC = () => {
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [currentBill, setCurrentBill] = useState<Bill | null>(null);
   const [printerConnected, setPrinterConnected] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { user } = useAuth();
   const { t } = useLocalization();
+  const { 
+    canPerformAction, 
+    recordAction, 
+    subscription,
+    loading: subscriptionLoading,
+    getDaysLeft,
+    getActionsLeft,
+    isDemo,
+    fetchSubscription
+  } = useSubscription();
 
   useEffect(() => {
     if (user) {
@@ -62,7 +76,12 @@ const BillingSystem: React.FC = () => {
     setPrinterConnected(bluetoothPrinter.isConnected());
   };
 
-  const addItemToBill = () => {
+  const addItemToBill = async () => {
+    if (!canPerformAction) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     if (!selectedItem || !quantity) {
       toast.error('Please select an item and enter quantity');
       return;
@@ -107,7 +126,12 @@ const BillingSystem: React.FC = () => {
     setQuantity('1');
   };
 
-  const updateItemQuantity = (itemId: string, newQuantity: number) => {
+  const updateItemQuantity = async (itemId: string, newQuantity: number) => {
+    if (!canPerformAction) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     if (newQuantity <= 0) {
       removeItemFromBill(itemId);
       return;
@@ -232,10 +256,20 @@ const BillingSystem: React.FC = () => {
   };
 
   const handleCheckout = async () => {
+    if (!canPerformAction) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     const bill = await saveBill();
     if (bill) {
+      // Record the bill creation action
+      await recordAction(bill.id, 'create_bill', `Bill ${bill.bill_number} created`);
       setCurrentBill(bill);
       setPrintDialogOpen(true);
+      
+      // Refresh subscription status
+      fetchSubscription();
     }
   };
 
@@ -259,6 +293,10 @@ const BillingSystem: React.FC = () => {
 
       await bluetoothPrinter.printReceipt(currentBill, businessInfo, t);
       toast.success('Receipt printed successfully!');
+      
+      // Add Indian farewell message to receipt footer
+      console.log('धन्यवाद! फिर से पधारें 🙏 / Thank you for coming, visit again!');
+      
       resetBill();
       setPrintDialogOpen(false);
     } catch (error) {
@@ -313,63 +351,6 @@ const BillingSystem: React.FC = () => {
     fetchData(); // Refresh data to update stock
   };
 
-  const handleVoiceAddItems = useCallback((voiceItems: { name: string; quantity: number }[]) => {
-    voiceItems.forEach(voiceItem => {
-      // Find matching item (case-insensitive)
-      const matchingItem = items.find(item => 
-        item.name.toLowerCase().includes(voiceItem.name.toLowerCase()) ||
-        voiceItem.name.toLowerCase().includes(item.name.toLowerCase())
-      );
-      
-      if (matchingItem) {
-        setSelectedItem(matchingItem.id);
-        setQuantity(voiceItem.quantity.toString());
-        
-        // Simulate click to add item
-        setTimeout(() => {
-          const qty = voiceItem.quantity;
-          if (qty <= 0) return;
-
-          const existingItemIndex = billItems.findIndex(bi => bi.item_id === matchingItem.id);
-          
-          if (existingItemIndex >= 0) {
-            const updatedItems = [...billItems];
-            const newQty = updatedItems[existingItemIndex].quantity + qty;
-            updatedItems[existingItemIndex].quantity = newQty;
-            updatedItems[existingItemIndex].total_price = newQty * matchingItem.price;
-            setBillItems(updatedItems);
-          } else {
-            const billItem: BillItem = {
-              id: Date.now().toString() + Math.random(),
-              item_id: matchingItem.id,
-              item_name: matchingItem.name,
-              quantity: qty,
-              unit_price: matchingItem.price,
-              total_price: qty * matchingItem.price,
-              unit: matchingItem.unit
-            };
-            setBillItems(prev => [...prev, billItem]);
-          }
-          
-          setSelectedItem('');
-          setQuantity('1');
-        }, 100);
-      }
-    });
-  }, [items, billItems]);
-
-  const handleVoiceSelectCustomer = useCallback((customerName: string) => {
-    const matchingCustomer = customers.find(customer =>
-      customer.name.toLowerCase().includes(customerName.toLowerCase()) ||
-      customerName.toLowerCase().includes(customer.name.toLowerCase())
-    );
-    
-    if (matchingCustomer) {
-      setSelectedCustomer(matchingCustomer.id);
-      toast.success(`Selected customer: ${matchingCustomer.name}`);
-    }
-  }, [customers]);
-
   const { subtotal, taxAmount, total } = calculateTotals();
 
   if (loading) {
@@ -385,8 +366,10 @@ const BillingSystem: React.FC = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2 space-y-6">
+    <div className="space-y-6">
+      <SubscriptionStatus />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
         {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -624,16 +607,10 @@ const BillingSystem: React.FC = () => {
           </CardContent>
         </Card>
       )}
+        </div>
       </div>
-
-      {/* AI Voice Assistant Sidebar */}
-      <div className="space-y-6">
-        <AIVoiceAssistant 
-          onAddItems={handleVoiceAddItems}
-          onSelectCustomer={handleVoiceSelectCustomer}
-          availableItems={items.map(item => ({ id: item.id, name: item.name, price: item.price }))}
-        />
-      </div>
+      
+      <UpgradeModal open={showUpgradeModal} onOpenChange={setShowUpgradeModal} />
     </div>
   );
 };

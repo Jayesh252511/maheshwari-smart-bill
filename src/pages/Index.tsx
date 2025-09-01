@@ -8,7 +8,7 @@ import CustomersManager from '@/components/CustomersManager';
 import BillingSystem from '@/components/BillingSystem';
 import BillsHistory from '@/components/BillsHistory';
 import Reports from '@/components/Reports';
-import AICustomerSupport from '@/components/AICustomerSupport';
+
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -51,7 +51,7 @@ const Index = () => {
     case 'reports':
       return <Reports />;
     case 'ai-support':
-      return <AICustomerSupport />;
+      return ;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
