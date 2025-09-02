@@ -27,42 +27,58 @@ interface Subscription {
 
 const Admin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, signIn } = useAuth();
   const navigate = useNavigate();
 
-  // Fixed admin credentials
-  const ADMIN_USERNAME = 'admin';
-  const ADMIN_PASSWORD = 'admin123';
-
+  // Check both localStorage admin session and Supabase admin auth
   useEffect(() => {
-    // Check if admin is already logged in
     const adminSession = localStorage.getItem('adminSession');
     if (adminSession === 'true') {
       setIsLoggedIn(true);
       fetchSubscriptions();
+    } else if (user?.email === 'admin@gmail.com') {
+      setIsLoggedIn(true);
+      fetchSubscriptions();
     }
-  }, []);
+  }, [user]);
 
-  const handleAdminLogin = (e: React.FormEvent) => {
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    
+    // Try Supabase authentication first
+    if (email === 'admin@gmail.com') {
+      try {
+        const { error } = await signIn(email, password);
+        if (!error) {
+          setIsLoggedIn(true);
+          toast.success('Admin login successful');
+          fetchSubscriptions();
+          return;
+        }
+      } catch (error) {
+        // If Supabase auth fails, fall back to localStorage method
+      }
+    }
+    
+    // Fallback to localStorage method
+    if (email === 'admin@gmail.com' && password === 'admin123') {
       setIsLoggedIn(true);
       localStorage.setItem('adminSession', 'true');
       toast.success('Admin login successful');
       fetchSubscriptions();
     } else {
-      toast.error('Invalid admin credentials');
+      toast.error('Invalid admin credentials. Use admin@gmail.com / admin123');
     }
   };
 
   const handleAdminLogout = () => {
     setIsLoggedIn(false);
     localStorage.removeItem('adminSession');
-    setUsername('');
+    setEmail('');
     setPassword('');
     toast.success('Admin logged out');
   };
@@ -74,14 +90,18 @@ const Admin = () => {
         .from('subscriptions' as any)
         .select(`
           *,
-          profiles(business_name)
+          profiles!inner(business_name)
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Subscription fetch error:', error);
+        throw error;
+      }
       setSubscriptions((data as any) || []);
-    } catch (error) {
-      toast.error('Failed to fetch subscriptions');
+    } catch (error: any) {
+      console.error('Failed to fetch subscriptions:', error);
+      toast.error(`Failed to fetch subscriptions: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -128,13 +148,13 @@ const Admin = () => {
           <CardContent>
             <form onSubmit={handleAdminLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="username"
-                  type="text"
-                  placeholder="Enter admin username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="admin@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>

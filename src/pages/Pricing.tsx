@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Check, Crown, Star, Zap, Copy } from 'lucide-react';
-import upiQRCode from '@/assets/upi-qr-code.png';
+import WhatsAppPayment from '@/components/WhatsAppPayment';
 
 const plans = [
   {
@@ -74,9 +74,8 @@ const plans = [
 
 const Pricing = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [showPayment, setShowPayment] = useState(false);
+  const [showWhatsAppPayment, setShowWhatsAppPayment] = useState(false);
   const { user } = useAuth();
-  const UPI_ID = 'jayeshneo07@oksbi';
 
   const handleSelectPlan = async (planCode: string) => {
     if (!user) {
@@ -85,28 +84,13 @@ const Pricing = () => {
     }
 
     setSelectedPlan(planCode);
+    setShowWhatsAppPayment(true);
     
-    // Record purchase intent
-    try {
-      const plan = plans.find(p => p.code === planCode);
-      const amount = parseInt(plan?.price.replace('₹', '') || '0');
-      
-      await supabase.from('purchase_intents' as any).insert({
-        user_id: user.id,
-        plan_code: planCode,
-        amount: amount,
-        status: 'pending'
-      });
-      
-      setShowPayment(true);
-      toast.success('Plan selected! Please complete payment.');
-    } catch (error) {
-      toast.error('Failed to process request');
-    }
+    toast.success('Plan selected! Complete payment via WhatsApp for instant activation.');
   };
 
   const copyUpiId = () => {
-    navigator.clipboard.writeText(UPI_ID);
+    navigator.clipboard.writeText('jayeshneo07@oksbi');
     toast.success('UPI ID copied to clipboard');
   };
 
@@ -176,68 +160,23 @@ const Pricing = () => {
         </div>
 
         <div className="text-center elegant-text">
-          <p className="mb-2">✓ Secure UPI Payment • ✓ Instant Activation • ✓ 24/7 Support</p>
+          <p className="mb-2">✓ WhatsApp Support • ✓ Instant Activation • ✓ 24/7 Help</p>
           <p className="text-sm text-muted-foreground">
-            Note: After payment, contact admin for plan activation
+            Pay via UPI → Send WhatsApp → Get activated within 1-2 hours!
           </p>
         </div>
       </div>
 
-      {/* Payment Dialog */}
-      <Dialog open={showPayment} onOpenChange={setShowPayment}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center traditional-heading">
-              Complete Payment
-            </DialogTitle>
-            <DialogDescription className="text-center elegant-text">
-              Pay {selectedPlanDetails?.price} for {selectedPlanDetails?.name} plan
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="bg-white p-4 rounded-lg inline-block mb-4">
-                <img 
-                  src={upiQRCode} 
-                  alt="UPI QR Code" 
-                  className="w-48 h-48 mx-auto"
-                />
-              </div>
-              <p className="text-sm elegant-text mb-2">Scan QR code or use UPI ID:</p>
-              
-              <div className="flex items-center justify-center gap-2 p-3 bg-secondary rounded-lg">
-                <code className="font-mono text-sm">{UPI_ID}</code>
-                <Button size="sm" variant="ghost" onClick={copyUpiId}>
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="bg-warning/10 border border-warning/20 rounded-lg p-4">
-                <h4 className="font-semibold mb-2">Payment Instructions:</h4>
-                <ol className="text-sm space-y-1 list-decimal list-inside elegant-text">
-                  <li>Pay {selectedPlanDetails?.price} to UPI ID: <strong>{UPI_ID}</strong></li>
-                  <li>Take screenshot of successful payment</li>
-                  <li>Contact admin for plan activation</li>
-                  <li>Your plan will be activated within 24 hours</li>
-                </ol>
-              </div>
-              
-              <Button 
-                className="w-full" 
-                onClick={() => {
-                  setShowPayment(false);
-                  toast.success('Payment initiated! Contact admin for activation.');
-                }}
-              >
-                I've Made the Payment
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* WhatsApp Payment Dialog */}
+      {selectedPlanDetails && (
+        <WhatsAppPayment
+          isOpen={showWhatsAppPayment}
+          onClose={() => setShowWhatsAppPayment(false)}
+          planCode={selectedPlan!}
+          planName={selectedPlanDetails.name}
+          amount={selectedPlanDetails.price}
+        />
+      )}
     </div>
   );
 };
