@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, Calculator, Shield, CreditCard } from 'lucide-react';
+import { LogOut, Calculator } from 'lucide-react';
 import { toast } from 'sonner';
 import LanguageSelector from '@/components/LanguageSelector';
 
@@ -40,24 +40,6 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Maheshwari Agency' }
             </div>
           </div>
           <div className="flex items-center gap-3 animate-fade-in">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.location.href = '/pricing'}
-              className="text-muted-foreground hover:text-accent transition-colors"
-            >
-              <CreditCard className="h-4 w-4 mr-2" />
-              Pricing
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.location.href = '/admin'}
-              className="text-muted-foreground hover:text-accent transition-colors"
-            >
-              <Shield className="h-4 w-4 mr-2" />
-              Admin
-            </Button>
             <LanguageSelector />
             <Button
               variant="ghost"
