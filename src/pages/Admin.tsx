@@ -86,19 +86,42 @@ const Admin = () => {
   const fetchSubscriptions = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('subscriptions' as any)
-        .select(`
-          *,
-          profiles!inner(business_name)
-        `)
+      // First get all subscriptions
+      const { data: subscriptionsData, error: subscriptionsError } = await supabase
+        .from('subscriptions')
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Subscription fetch error:', error);
-        throw error;
+      if (subscriptionsError) {
+        console.error('Subscription fetch error:', subscriptionsError);
+        throw subscriptionsError;
       }
-      setSubscriptions((data as any) || []);
+
+      // Then get profiles for those users
+      const userIds = subscriptionsData?.map(sub => sub.user_id) || [];
+      let profilesData: any[] = [];
+      
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, business_name')
+          .in('user_id', userIds);
+
+        if (!profilesError) {
+          profilesData = profiles || [];
+        }
+      }
+
+      // Combine the data
+      const combinedData = subscriptionsData?.map(subscription => {
+        const profile = profilesData.find(p => p.user_id === subscription.user_id);
+        return {
+          ...subscription,
+          profiles: profile ? { business_name: profile.business_name } : null
+        };
+      }) || [];
+
+      setSubscriptions(combinedData);
     } catch (error: any) {
       console.error('Failed to fetch subscriptions:', error);
       toast.error(`Failed to fetch subscriptions: ${error.message || 'Unknown error'}`);
