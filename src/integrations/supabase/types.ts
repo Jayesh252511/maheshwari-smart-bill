@@ -375,6 +375,10 @@ export type Database = {
         Args: { plan_code_param: string; target_user_id: string }
         Returns: boolean
       }
+      admin_activate_plan_simple: {
+        Args: { plan_code_param: string; target_user_id: string }
+        Returns: Json
+      }
       can_perform_bill_action: {
         Args: { user_uuid: string }
         Returns: boolean

@@ -132,16 +132,33 @@ const Admin = () => {
 
   const activatePlan = async (userId: string, planCode: string) => {
     try {
-      const { error } = await (supabase as any).rpc('admin_activate_plan', {
+      console.log('Activating plan:', { userId, planCode });
+      
+      const { data, error } = await supabase.rpc('admin_activate_plan_simple', {
         target_user_id: userId,
         plan_code_param: planCode
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('RPC Error:', error);
+        throw error;
+      }
+
+      console.log('RPC Response:', data);
+
+      // Check if data is an object with success property
+      if (data && typeof data === 'object' && 'success' in data) {
+        const result = data as { success: boolean; error?: string };
+        if (!result.success) {
+          throw new Error(result.error || 'Unknown error occurred');
+        }
+      }
+
       toast.success('Plan activated successfully');
       fetchSubscriptions();
-    } catch (error) {
-      toast.error('Failed to activate plan');
+    } catch (error: any) {
+      console.error('Failed to activate plan:', error);
+      toast.error(`Failed to activate plan: ${error.message || 'Unknown error'}`);
     }
   };
 
