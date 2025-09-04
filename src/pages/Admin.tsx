@@ -49,15 +49,13 @@ const Admin = () => {
   const { user, signIn } = useAuth();
   const navigate = useNavigate();
 
-  // Check both localStorage admin session and Supabase admin auth
+  // Require Supabase admin auth only
   useEffect(() => {
-    const adminSession = localStorage.getItem('adminSession');
-    if (adminSession === 'true') {
+    if (user?.email === 'admin@gmail.com') {
       setIsLoggedIn(true);
       fetchData();
-    } else if (user?.email === 'admin@gmail.com') {
-      setIsLoggedIn(true);
-      fetchData();
+    } else {
+      setIsLoggedIn(false);
     }
   }, [user]);
 
@@ -137,36 +135,29 @@ const Admin = () => {
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Try Supabase authentication first
-    if (email === 'admin@gmail.com') {
-      try {
-        const { error } = await signIn(email, password);
-        if (!error) {
-          setIsLoggedIn(true);
-          toast.success('Admin login successful');
-          fetchData();
-          return;
-        }
-      } catch (error) {
-        // If Supabase auth fails, fall back to localStorage method
-      }
+
+    if (email !== 'admin@gmail.com') {
+      toast.error('Please use the admin account: admin@gmail.com');
+      return;
     }
-    
-    // Fallback to localStorage method
-    if (email === 'admin@gmail.com' && password === 'admin123') {
+
+    try {
+      const { error } = await signIn(email, password);
+      if (error) {
+        toast.error(error.message || 'Invalid admin credentials');
+        return;
+      }
       setIsLoggedIn(true);
-      localStorage.setItem('adminSession', 'true');
       toast.success('Admin login successful');
       fetchData();
-    } else {
-      toast.error('Invalid admin credentials. Use admin@gmail.com / admin123');
+    } catch (err: any) {
+      toast.error(err?.message || 'Admin login failed');
     }
   };
 
-  const handleAdminLogout = () => {
+  const handleAdminLogout = async () => {
+    await supabase.auth.signOut();
     setIsLoggedIn(false);
-    localStorage.removeItem('adminSession');
     setEmail('');
     setPassword('');
     toast.success('Admin logged out');
