@@ -49,13 +49,15 @@ const Admin = () => {
   const { user, signIn } = useAuth();
   const navigate = useNavigate();
 
-  // Require Supabase admin auth only
+  // Check both localStorage admin session and Supabase admin auth
   useEffect(() => {
-    if (user?.email === 'admin@gmail.com') {
+    const adminSession = localStorage.getItem('adminSession');
+    if (adminSession === 'true') {
       setIsLoggedIn(true);
       fetchData();
-    } else {
-      setIsLoggedIn(false);
+    } else if (user?.email === 'admin@gmail.com') {
+      setIsLoggedIn(true);
+      fetchData();
     }
   }, [user]);
 
@@ -63,101 +65,71 @@ const Admin = () => {
   useEffect(() => {
     if (!isLoggedIn) return;
 
-    console.log('Setting up real-time subscriptions for admin...');
-
-    // Real-time subscription for purchase intents - using unique channel names
+    // Real-time subscription for purchase intents
     const purchaseIntentsChannel = supabase
-      .channel(`admin-purchase-intents-${Date.now()}`)
+      .channel('purchase-intents-changes')
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'purchase_intents' },
         (payload) => {
-          console.log('Real-time: New purchase intent received:', payload);
-          const newIntent = payload.new as PurchaseIntent;
-          setPurchaseIntents(prev => {
-            // Avoid duplicates
-            const exists = prev.some(intent => intent.id === newIntent.id);
-            if (exists) return prev;
-            return [newIntent, ...prev];
-          });
+          console.log('New purchase intent:', payload);
+          setPurchaseIntents(prev => [payload.new as PurchaseIntent, ...prev]);
           setNewIntentsCount(prev => prev + 1);
-          toast.success('🔔 New purchase request received!', {
-            description: `${newIntent.business_name || 'Unknown'} - Plan: ${newIntent.plan_code} - ₹${newIntent.amount}`,
-            duration: 5000,
+          toast.success('New purchase request received!', {
+            description: `Plan: ${payload.new.plan_code} - Amount: ₹${payload.new.amount}`
           });
         }
       )
-      .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'purchase_intents' },
-        () => {
-          console.log('Real-time: Purchase intent updated');
-          fetchPurchaseIntents();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Purchase intents channel status:', status);
-      });
+      .subscribe();
 
     // Real-time subscription for subscription changes
     const subscriptionsChannel = supabase
-      .channel(`admin-subscriptions-${Date.now()}`)
+      .channel('subscriptions-changes')
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'subscriptions' },
-        (payload) => {
-          console.log('Real-time: Subscription changed:', payload);
-          fetchSubscriptions();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Subscriptions channel status:', status);
-      });
-
-    // Also listen for profile changes to get updated business names
-    const profilesChannel = supabase
-      .channel(`admin-profiles-${Date.now()}`)
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles' },
         () => {
-          console.log('Real-time: Profile updated');
           fetchSubscriptions();
         }
       )
-      .subscribe((status) => {
-        console.log('Profiles channel status:', status);
-      });
+      .subscribe();
 
     return () => {
-      console.log('Cleaning up real-time subscriptions...');
       supabase.removeChannel(purchaseIntentsChannel);
       supabase.removeChannel(subscriptionsChannel);
-      supabase.removeChannel(profilesChannel);
     };
   }, [isLoggedIn]);
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (email !== 'admin@gmail.com') {
-      toast.error('Please use the admin account: admin@gmail.com');
-      return;
-    }
-
-    try {
-      const { error } = await signIn(email, password);
-      if (error) {
-        toast.error(error.message || 'Invalid admin credentials');
-        return;
+    
+    // Try Supabase authentication first
+    if (email === 'admin@gmail.com') {
+      try {
+        const { error } = await signIn(email, password);
+        if (!error) {
+          setIsLoggedIn(true);
+          toast.success('Admin login successful');
+          fetchData();
+          return;
+        }
+      } catch (error) {
+        // If Supabase auth fails, fall back to localStorage method
       }
+    }
+    
+    // Fallback to localStorage method
+    if (email === 'admin@gmail.com' && password === 'admin123') {
       setIsLoggedIn(true);
+      localStorage.setItem('adminSession', 'true');
       toast.success('Admin login successful');
       fetchData();
-    } catch (err: any) {
-      toast.error(err?.message || 'Admin login failed');
+    } else {
+      toast.error('Invalid admin credentials. Use admin@gmail.com / admin123');
     }
   };
 
-  const handleAdminLogout = async () => {
-    await supabase.auth.signOut();
+  const handleAdminLogout = () => {
     setIsLoggedIn(false);
+    localStorage.removeItem('adminSession');
     setEmail('');
     setPassword('');
     toast.success('Admin logged out');
