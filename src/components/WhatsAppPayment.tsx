@@ -35,7 +35,7 @@ const WhatsAppPayment: React.FC<WhatsAppPaymentProps> = ({
   const { user } = useAuth();
   
   const UPI_ID = 'jayeshneo07@oksbi';
-  const ADMIN_WHATSAPP = '+91 9876543210'; // Replace with actual admin WhatsApp
+  const ADMIN_WHATSAPP = '+91 8605601801';
 
   const generateWhatsAppMessage = (template: string) => {
     return template

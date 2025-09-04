@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Shield, Users, Calendar } from 'lucide-react';
+import { Shield, Users, Calendar, Bell, Play, Pause } from 'lucide-react';
 
 interface Subscription {
   id: string;
@@ -20,9 +20,22 @@ interface Subscription {
   end_date: string | null;
   action_count: number;
   max_actions: number;
+  is_paused: boolean;
   profiles?: {
     business_name: string | null;
   };
+}
+
+interface PurchaseIntent {
+  id: string;
+  user_id: string;
+  plan_code: string;
+  amount: number;
+  status: string;
+  whatsapp_number: string | null;
+  transaction_id: string | null;
+  business_name: string | null;
+  created_at: string;
 }
 
 const Admin = () => {
@@ -30,7 +43,9 @@ const Admin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [purchaseIntents, setPurchaseIntents] = useState<PurchaseIntent[]>([]);
   const [loading, setLoading] = useState(false);
+  const [newIntentsCount, setNewIntentsCount] = useState(0);
   const { user, signIn } = useAuth();
   const navigate = useNavigate();
 
@@ -39,12 +54,49 @@ const Admin = () => {
     const adminSession = localStorage.getItem('adminSession');
     if (adminSession === 'true') {
       setIsLoggedIn(true);
-      fetchSubscriptions();
+      fetchData();
     } else if (user?.email === 'admin@gmail.com') {
       setIsLoggedIn(true);
-      fetchSubscriptions();
+      fetchData();
     }
   }, [user]);
+
+  // Set up real-time subscriptions when admin is logged in
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    // Real-time subscription for purchase intents
+    const purchaseIntentsChannel = supabase
+      .channel('purchase-intents-changes')
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'purchase_intents' },
+        (payload) => {
+          console.log('New purchase intent:', payload);
+          setPurchaseIntents(prev => [payload.new as PurchaseIntent, ...prev]);
+          setNewIntentsCount(prev => prev + 1);
+          toast.success('New purchase request received!', {
+            description: `Plan: ${payload.new.plan_code} - Amount: ₹${payload.new.amount}`
+          });
+        }
+      )
+      .subscribe();
+
+    // Real-time subscription for subscription changes
+    const subscriptionsChannel = supabase
+      .channel('subscriptions-changes')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'subscriptions' },
+        () => {
+          fetchSubscriptions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(purchaseIntentsChannel);
+      supabase.removeChannel(subscriptionsChannel);
+    };
+  }, [isLoggedIn]);
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +108,7 @@ const Admin = () => {
         if (!error) {
           setIsLoggedIn(true);
           toast.success('Admin login successful');
-          fetchSubscriptions();
+          fetchData();
           return;
         }
       } catch (error) {
@@ -69,7 +121,7 @@ const Admin = () => {
       setIsLoggedIn(true);
       localStorage.setItem('adminSession', 'true');
       toast.success('Admin login successful');
-      fetchSubscriptions();
+      fetchData();
     } else {
       toast.error('Invalid admin credentials. Use admin@gmail.com / admin123');
     }
@@ -81,6 +133,10 @@ const Admin = () => {
     setEmail('');
     setPassword('');
     toast.success('Admin logged out');
+  };
+
+  const fetchData = async () => {
+    await Promise.all([fetchSubscriptions(), fetchPurchaseIntents()]);
   };
 
   const fetchSubscriptions = async () => {
@@ -155,18 +211,62 @@ const Admin = () => {
       }
 
       toast.success('Plan activated successfully');
-      fetchSubscriptions();
+      fetchData();
     } catch (error: any) {
       console.error('Failed to activate plan:', error);
       toast.error(`Failed to activate plan: ${error.message || 'Unknown error'}`);
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const fetchPurchaseIntents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('purchase_intents')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setPurchaseIntents(data || []);
+    } catch (error: any) {
+      console.error('Failed to fetch purchase intents:', error);
+    }
+  };
+
+  const getStatusColor = (status: string, isPaused: boolean = false) => {
+    if (isPaused) return 'bg-orange-500';
     switch (status) {
       case 'active': return 'bg-success';
       case 'demo': return 'bg-warning';
       default: return 'bg-muted';
+    }
+  };
+
+  const getStatusText = (status: string, isPaused: boolean = false) => {
+    if (isPaused) return 'Paused';
+    return status;
+  };
+
+  const toggleSubscription = async (userId: string, action: 'pause' | 'resume') => {
+    try {
+      const { data, error } = await supabase.rpc('admin_toggle_subscription', {
+        target_user_id: userId,
+        action_type: action
+      });
+
+      if (error) throw error;
+
+      if (data && typeof data === 'object' && 'success' in data) {
+        const result = data as { success: boolean; message?: string; error?: string };
+        if (!result.success) {
+          throw new Error(result.error || 'Unknown error');
+        }
+        toast.success(result.message || `Subscription ${action}d successfully`);
+      }
+
+      fetchData();
+    } catch (error: any) {
+      toast.error(`Failed to ${action} subscription: ${error.message}`);
     }
   };
 
@@ -228,7 +328,16 @@ const Admin = () => {
             <p className="elegant-text">Manage user subscriptions and approvals</p>
           </div>
           <div className="flex gap-4">
-            <Button onClick={fetchSubscriptions} variant="outline">
+            <Button onClick={() => {
+              fetchData();
+              setNewIntentsCount(0);
+            }} variant="outline" className="relative">
+              {newIntentsCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1">
+                  {newIntentsCount}
+                </Badge>
+              )}
+              <Bell className="h-4 w-4 mr-2" />
               Refresh Data
             </Button>
             <Button onClick={handleAdminLogout} variant="destructive">
@@ -237,7 +346,7 @@ const Admin = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card className="creative-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -255,7 +364,7 @@ const Admin = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {subscriptions.filter(s => s.status === 'active').length}
+                {subscriptions.filter(s => s.status === 'active' && !s.is_paused).length}
               </div>
             </CardContent>
           </Card>
@@ -271,7 +380,79 @@ const Admin = () => {
               </div>
             </CardContent>
           </Card>
+
+          <Card className="creative-card relative">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">New Requests</CardTitle>
+              <Bell className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{purchaseIntents.length}</div>
+              {newIntentsCount > 0 && (
+                <Badge className="absolute top-2 right-2 bg-red-500 text-white">
+                  {newIntentsCount}
+                </Badge>
+              )}
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Purchase Intents Section */}
+        {purchaseIntents.length > 0 && (
+          <Card className="creative-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Recent Purchase Requests
+                {newIntentsCount > 0 && (
+                  <Badge className="bg-red-500 text-white">
+                    {newIntentsCount} new
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Users who have submitted payment and are waiting for plan activation
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Business Name</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>WhatsApp</TableHead>
+                    <TableHead>Transaction ID</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {purchaseIntents.map((intent) => (
+                    <TableRow key={intent.id}>
+                      <TableCell>{intent.business_name || 'Unknown'}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{intent.plan_code}</Badge>
+                      </TableCell>
+                      <TableCell>₹{intent.amount}</TableCell>
+                      <TableCell>{intent.whatsapp_number}</TableCell>
+                      <TableCell className="font-mono text-sm">{intent.transaction_id}</TableCell>
+                      <TableCell>{new Date(intent.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          onClick={() => activatePlan(intent.user_id, intent.plan_code)}
+                        >
+                          Activate Plan
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="creative-card">
           <CardHeader>
@@ -302,8 +483,8 @@ const Admin = () => {
                         {subscription.profiles?.business_name || 'Unknown Business'}
                       </TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(subscription.status)}>
-                          {subscription.status}
+                        <Badge className={getStatusColor(subscription.status, subscription.is_paused)}>
+                          {getStatusText(subscription.status, subscription.is_paused)}
                         </Badge>
                       </TableCell>
                       <TableCell>{subscription.plan_code || 'Demo'}</TableCell>
@@ -318,27 +499,54 @@ const Admin = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => activatePlan(subscription.user_id, '199_1m')}
-                          >
-                            1M Plan
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => activatePlan(subscription.user_id, '299_3m')}
-                          >
-                            3M Plan
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => activatePlan(subscription.user_id, '599_12m')}
-                          >
-                            12M Plan
-                          </Button>
+                          {subscription.status === 'active' && subscription.plan_code ? (
+                            // Show pause/resume for active plans
+                            <Button
+                              size="sm"
+                              variant={subscription.is_paused ? "default" : "destructive"}
+                              onClick={() => toggleSubscription(
+                                subscription.user_id, 
+                                subscription.is_paused ? 'resume' : 'pause'
+                              )}
+                            >
+                              {subscription.is_paused ? (
+                                <>
+                                  <Play className="h-4 w-4 mr-1" />
+                                  Resume
+                                </>
+                              ) : (
+                                <>
+                                  <Pause className="h-4 w-4 mr-1" />
+                                  Pause
+                                </>
+                              )}
+                            </Button>
+                          ) : (
+                            // Show plan activation buttons for non-active users
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => activatePlan(subscription.user_id, '199_1m')}
+                              >
+                                1M Plan
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => activatePlan(subscription.user_id, '299_3m')}
+                              >
+                                3M Plan
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => activatePlan(subscription.user_id, '599_12m')}
+                              >
+                                12M Plan
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

@@ -309,6 +309,7 @@ export type Database = {
           created_at: string
           end_date: string | null
           id: string
+          is_paused: boolean | null
           max_actions: number
           plan_code: string | null
           start_date: string | null
@@ -321,6 +322,7 @@ export type Database = {
           created_at?: string
           end_date?: string | null
           id?: string
+          is_paused?: boolean | null
           max_actions?: number
           plan_code?: string | null
           start_date?: string | null
@@ -333,6 +335,7 @@ export type Database = {
           created_at?: string
           end_date?: string | null
           id?: string
+          is_paused?: boolean | null
           max_actions?: number
           plan_code?: string | null
           start_date?: string | null
@@ -377,6 +380,10 @@ export type Database = {
       }
       admin_activate_plan_simple: {
         Args: { plan_code_param: string; target_user_id: string }
+        Returns: Json
+      }
+      admin_toggle_subscription: {
+        Args: { action_type: string; target_user_id: string }
         Returns: Json
       }
       can_perform_bill_action: {
