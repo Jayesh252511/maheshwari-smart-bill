@@ -65,36 +65,73 @@ const Admin = () => {
   useEffect(() => {
     if (!isLoggedIn) return;
 
-    // Real-time subscription for purchase intents
+    console.log('Setting up real-time subscriptions for admin...');
+
+    // Real-time subscription for purchase intents - using unique channel names
     const purchaseIntentsChannel = supabase
-      .channel('purchase-intents-changes')
+      .channel(`admin-purchase-intents-${Date.now()}`)
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'purchase_intents' },
         (payload) => {
-          console.log('New purchase intent:', payload);
-          setPurchaseIntents(prev => [payload.new as PurchaseIntent, ...prev]);
+          console.log('Real-time: New purchase intent received:', payload);
+          const newIntent = payload.new as PurchaseIntent;
+          setPurchaseIntents(prev => {
+            // Avoid duplicates
+            const exists = prev.some(intent => intent.id === newIntent.id);
+            if (exists) return prev;
+            return [newIntent, ...prev];
+          });
           setNewIntentsCount(prev => prev + 1);
-          toast.success('New purchase request received!', {
-            description: `Plan: ${payload.new.plan_code} - Amount: ₹${payload.new.amount}`
+          toast.success('🔔 New purchase request received!', {
+            description: `${newIntent.business_name || 'Unknown'} - Plan: ${newIntent.plan_code} - ₹${newIntent.amount}`,
+            duration: 5000,
           });
         }
       )
-      .subscribe();
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'purchase_intents' },
+        () => {
+          console.log('Real-time: Purchase intent updated');
+          fetchPurchaseIntents();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Purchase intents channel status:', status);
+      });
 
     // Real-time subscription for subscription changes
     const subscriptionsChannel = supabase
-      .channel('subscriptions-changes')
+      .channel(`admin-subscriptions-${Date.now()}`)
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'subscriptions' },
-        () => {
+        (payload) => {
+          console.log('Real-time: Subscription changed:', payload);
           fetchSubscriptions();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscriptions channel status:', status);
+      });
+
+    // Also listen for profile changes to get updated business names
+    const profilesChannel = supabase
+      .channel(`admin-profiles-${Date.now()}`)
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          console.log('Real-time: Profile updated');
+          fetchSubscriptions();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Profiles channel status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up real-time subscriptions...');
       supabase.removeChannel(purchaseIntentsChannel);
       supabase.removeChannel(subscriptionsChannel);
+      supabase.removeChannel(profilesChannel);
     };
   }, [isLoggedIn]);
 
