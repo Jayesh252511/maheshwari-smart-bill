@@ -75,16 +75,16 @@ export function generateReceiptData(bill: any, businessInfo: any, t?: (key: stri
     receipt += LF;
   }
   
-  // Table header with proper spacing for 32 chars (removed Unit column)
-  receipt += padRight('Item Name', 16) + padRight('Qty', 6) + padRight('Rate', 10) + LF;
+  // Table header with proper spacing for 32 chars
+  receipt += padRight('Item Name', 13) + padRight('Quantity', 9) + padRight('Price/Unit', 10) + LF;
   receipt += '================================' + LF;
   
-  // Items with aligned amounts (no unit display)
+  // Items with aligned amounts
   let totalQuantity = 0;
   bill.items.forEach((item: any) => {
     totalQuantity += item.quantity;
-    const itemName = padRight(item.item_name, 16);
-    const qty = padRight(item.quantity.toString(), 6);
+    const itemName = padRight(item.item_name, 13);
+    const qty = padRight(item.quantity + ' ' + item.unit, 9);
     const price = padRight(item.unit_price.toFixed(2), 10);
     const amount = item.total_price.toFixed(2);
     receipt += itemName + qty + price + amount + LF;
@@ -92,12 +92,11 @@ export function generateReceiptData(bill: any, businessInfo: any, t?: (key: stri
   
   receipt += '================================' + LF;
   
-  // Summary with proper spacing and alignment
+  // Summary with quantity aligned under Quantity column and amounts right-aligned
   receipt += LF;
-  receipt += padRight('Total Items:', 16) + padRight(totalQuantity.toString(), 6) + LF;
-  receipt += LF;
-  receipt += padRight('', 22) + padRight('Subtotal:', 10) + bill.subtotal.toFixed(2) + LF;
-  receipt += padRight('', 22) + padRight('Total:', 10) + bill.total_amount.toFixed(2) + LF;
+  receipt += padRight('', 13) + padRight('(' + totalQuantity + ')', 9) + LF; // Quantity aligned under Quantity column
+  receipt += padRight('', 23) + padRight('Subtotal:', 9) + bill.subtotal.toFixed(2) + LF;
+  receipt += padRight('', 23) + padRight('Total:', 9) + bill.total_amount.toFixed(2) + LF;
   
   // Footer (ALL BOLD)
   receipt += LF;

@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Plus, Package, Users, Receipt, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import CurrentPlan from './CurrentPlan';
 
 interface DashboardStats {
   items: number;
@@ -131,9 +130,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
   return (
     <div className="space-y-6">
-      {/* Current Plan Status */}
-      <CurrentPlan />
-      
       {/* Quick Actions */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Quick Actions</h2>

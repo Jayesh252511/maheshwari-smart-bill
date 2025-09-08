@@ -7,34 +7,13 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
+  // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   public: {
     Tables: {
-      admins: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       bill_items: {
         Row: {
           bill_id: string
@@ -76,41 +55,6 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "items"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      billing_actions: {
-        Row: {
-          action_type: string
-          bill_id: string | null
-          created_at: string
-          description: string | null
-          id: string
-          user_id: string
-        }
-        Insert: {
-          action_type: string
-          bill_id?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          user_id: string
-        }
-        Update: {
-          action_type?: string
-          bill_id?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "billing_actions_bill_id_fkey"
-            columns: ["bill_id"]
-            isOneToOne: false
-            referencedRelation: "bills"
             referencedColumns: ["id"]
           },
         ]
@@ -255,150 +199,12 @@ export type Database = {
         }
         Relationships: []
       }
-      purchase_intents: {
-        Row: {
-          amount: number
-          business_name: string | null
-          created_at: string
-          device_info: Json | null
-          email: string | null
-          id: string
-          payment_screenshot: string | null
-          plan_code: string
-          status: string
-          timestamp: string
-          transaction_id: string | null
-          user_id: string
-          whatsapp_number: string | null
-        }
-        Insert: {
-          amount: number
-          business_name?: string | null
-          created_at?: string
-          device_info?: Json | null
-          email?: string | null
-          id?: string
-          payment_screenshot?: string | null
-          plan_code: string
-          status?: string
-          timestamp?: string
-          transaction_id?: string | null
-          user_id: string
-          whatsapp_number?: string | null
-        }
-        Update: {
-          amount?: number
-          business_name?: string | null
-          created_at?: string
-          device_info?: Json | null
-          email?: string | null
-          id?: string
-          payment_screenshot?: string | null
-          plan_code?: string
-          status?: string
-          timestamp?: string
-          transaction_id?: string | null
-          user_id?: string
-          whatsapp_number?: string | null
-        }
-        Relationships: []
-      }
-      subscriptions: {
-        Row: {
-          action_count: number
-          created_at: string
-          end_date: string | null
-          id: string
-          is_paused: boolean | null
-          max_actions: number
-          plan_code: string | null
-          start_date: string | null
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          action_count?: number
-          created_at?: string
-          end_date?: string | null
-          id?: string
-          is_paused?: boolean | null
-          max_actions?: number
-          plan_code?: string | null
-          start_date?: string | null
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          action_count?: number
-          created_at?: string
-          end_date?: string | null
-          id?: string
-          is_paused?: boolean | null
-          max_actions?: number
-          plan_code?: string | null
-          start_date?: string | null
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      whatsapp_templates: {
-        Row: {
-          created_at: string
-          id: string
-          message_template: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          message_template: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          message_template?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      admin_activate_plan: {
-        Args: { plan_code_param: string; target_user_id: string }
-        Returns: boolean
-      }
-      admin_activate_plan_simple: {
-        Args: { plan_code_param: string; target_user_id: string }
-        Returns: Json
-      }
-      admin_toggle_subscription: {
-        Args: { action_type: string; target_user_id: string }
-        Returns: Json
-      }
-      can_perform_bill_action: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
-      record_bill_action: {
-        Args: {
-          action_type_param: string
-          bill_uuid: string
-          description_param?: string
-          user_uuid: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
