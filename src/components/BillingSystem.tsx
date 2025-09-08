@@ -253,8 +253,8 @@ const BillingSystem: React.FC = () => {
 
       const businessInfo = {
         name: 'Maheshwari Agency',
-        address: 'Your Business Address',
-        phone: 'Your Phone Number'
+        address: 'matakari galli shegaon',
+        phone: '9970041700'
       };
 
       await bluetoothPrinter.printReceipt(currentBill, businessInfo, t);
@@ -273,8 +273,8 @@ const BillingSystem: React.FC = () => {
     try {
       const businessInfo = {
         name: 'Maheshwari Agency',
-        address: 'Your Business Address',
-        phone: 'Your Phone Number'
+        address: 'matakari galli shegaon',
+        phone: '9970041700'
       };
 
       await downloadPDF(currentBill, businessInfo, undefined, t);
@@ -291,8 +291,8 @@ const BillingSystem: React.FC = () => {
     try {
       const businessInfo = {
         name: 'Maheshwari Agency',
-        address: 'Your Business Address',
-        phone: 'Your Phone Number'
+        address: 'matakari galli shegaon',
+        phone: '9970041700'
       };
 
       await sharePDF(currentBill, businessInfo, t);
@@ -403,7 +403,7 @@ const BillingSystem: React.FC = () => {
         </div>
       </div>
 
-      {/* Customer Selection */}
+        {/* Customer Selection */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Customer Details</CardTitle>
@@ -425,6 +425,18 @@ const BillingSystem: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Top Total Display - Only show during bill creation */}
+      {billItems.length > 0 && (
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-medium">Current Total:</span>
+              <span className="text-2xl font-bold text-primary">{total.toFixed(2)}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Add Items */}
       <Card>
         <CardHeader>
@@ -439,11 +451,11 @@ const BillingSystem: React.FC = () => {
                   <SelectValue placeholder="Select item" />
                 </SelectTrigger>
                 <SelectContent>
-                  {items.map(item => (
-                    <SelectItem key={item.id} value={item.id}>
-                      {item.name} ({item.price}/{item.unit})
-                    </SelectItem>
-                  ))}
+                   {items.map(item => (
+                     <SelectItem key={item.id} value={item.id}>
+                       {item.name} (₹{item.price})
+                     </SelectItem>
+                   ))}
                 </SelectContent>
               </Select>
             </div>
@@ -480,7 +492,7 @@ const BillingSystem: React.FC = () => {
                   <div className="flex-1">
                     <h4 className="font-medium">{item.item_name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      {item.unit_price.toFixed(2)} per {item.unit}
+                      Rate: {item.unit_price.toFixed(2)}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
