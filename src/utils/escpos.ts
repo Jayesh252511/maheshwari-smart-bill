@@ -56,44 +56,42 @@ export function generateReceiptData(bill: any, businessInfo: any, t?: (key: stri
   receipt += LF;
   receipt += ALIGN_LEFT;
   
-  // Bill details (ALL BOLD)
-  receipt += 'Bill No: ' + String(bill.bill_number).padStart(2, '0');
-  receipt += '          Date: ' + new Date(bill.created_at).toLocaleDateString() + LF;
+  // Bill details (ALL BOLD) - left and right aligned
+  const billNo = 'Bill No: ' + String(bill.bill_number).padStart(2, '0');
+  const billDate = new Date(bill.created_at).toLocaleDateString();
+  receipt += billNo + padLeft('Date: ' + billDate, 32 - billNo.length) + LF;
   receipt += LF;
   
-  // Customer details (ALL BOLD)
+  // Customer details (ALL BOLD) - left aligned
   if (bill.customer_name) {
-    receipt += 'Bill To:' + LF;
-    receipt += bill.customer_name + LF;
-    if (bill.customer_phone) {
-      receipt += 'Phone: ' + bill.customer_phone + LF;
-    }
+    receipt += 'Cash' + LF;
+    receipt += 'Phone: ' + (bill.customer_phone || '7020719596') + LF;
     receipt += LF;
   }
   
-  // Table header - wider spacing for better visibility
-  receipt += padRight('Item', 16) + padRight('Qty', 7) + padRight('Price', 9) + LF;
+  // Table header - full width columns
+  receipt += padRight('Item', 13) + padCenter('Qty', 7) + padLeft('Price', 12) + LF;
   receipt += '================================' + LF;
   
-  // Items - all prices and quantities bold
+  // Items - using full width with proper alignment
   let totalQuantity = 0;
   bill.items.forEach((item: any) => {
     totalQuantity += item.quantity;
-    const itemName = padRight(item.item_name, 16);
-    const qty = BOLD_ON + padRight(String(item.quantity), 7) + BOLD_OFF;
-    const price = BOLD_ON + padRight(item.unit_price.toFixed(2), 9) + BOLD_OFF;
+    const itemName = padRight(item.item_name, 13);
+    const qty = BOLD_ON + padCenter(String(item.quantity), 7) + BOLD_OFF;
+    const price = BOLD_ON + padLeft(item.unit_price.toFixed(2), 12) + BOLD_OFF;
     receipt += itemName + qty + price + LF;
   });
   
   receipt += '================================' + LF;
   receipt += LF;
   
-  // Summary - all amounts bold
-  receipt += padRight('', 16) + BOLD_ON + padRight('(' + totalQuantity + ')', 7) + BOLD_OFF + LF;
+  // Summary - right aligned amounts
+  receipt += padRight('', 20) + BOLD_ON + padCenter('(' + totalQuantity + ')', 12) + BOLD_OFF + LF;
   receipt += LF;
-  receipt += padRight('Subtotal:', 23) + BOLD_ON + bill.subtotal.toFixed(2) + BOLD_OFF + LF;
+  receipt += padRight('Subtotal:', 20) + BOLD_ON + padLeft(bill.subtotal.toFixed(2), 12) + BOLD_OFF + LF;
   receipt += LF;
-  receipt += padRight('TOTAL:', 23) + BOLD_ON + bill.total_amount.toFixed(2) + BOLD_OFF + LF;
+  receipt += padRight('TOTAL:', 20) + BOLD_ON + padLeft(bill.total_amount.toFixed(2), 12) + BOLD_OFF + LF;
   
   // Footer (ALL BOLD)
   receipt += LF;
