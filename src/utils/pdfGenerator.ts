@@ -14,14 +14,10 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any, t?: (key
   
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
-  if (businessInfo.address) {
-    doc.text(businessInfo.address, pageWidth / 2, y, { align: 'center' });
-    y += 7;
-  }
-  if (businessInfo.phone) {
-    doc.text(`Tel: ${businessInfo.phone}`, pageWidth / 2, y, { align: 'center' });
-    y += 7;
-  }
+  doc.text('matakari galli shegaon', pageWidth / 2, y, { align: 'center' });
+  y += 7;
+  doc.text('Tel: 9970041700', pageWidth / 2, y, { align: 'center' });
+  y += 7;
   
   // Line separator
   y += 5;
@@ -65,8 +61,8 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any, t?: (key
   const tableStartY = y;
   doc.setFont('helvetica', 'bold');
   doc.text(t ? t('itemName') : 'Item', 20, y);
-  doc.text(t ? t('quantity') : 'Qty', 110, y);
-  doc.text(t ? t('price') : 'Rate', 135, y);
+  doc.text(t ? t('quantity') : 'Qty', 120, y);
+  doc.text(t ? t('price') : 'Price', 145, y);
   doc.text(t ? t('amount') : 'Amount', pageWidth - 20, y, { align: 'right' });
   y += 5;
   
@@ -74,14 +70,15 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any, t?: (key
   doc.line(20, y, pageWidth - 20, y);
   y += 10;
   
-  // Items
-  doc.setFont('helvetica', 'normal');
+  // Items - bold quantities and prices
   bill.items.forEach((item) => {
+    doc.setFont('helvetica', 'normal');
     doc.text(item.item_name, 20, y);
-    doc.text(`${item.quantity} ${item.unit}`, 110, y);
-    doc.text(`${item.unit_price.toFixed(2)}`, 135, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${item.quantity}`, 120, y);
+    doc.text(`${item.unit_price.toFixed(2)}`, 145, y);
     doc.text(`${item.total_price.toFixed(2)}`, pageWidth - 20, y, { align: 'right' });
-    y += 7;
+    y += 8;
   });
   
   // Table footer line

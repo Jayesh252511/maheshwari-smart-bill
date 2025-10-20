@@ -253,8 +253,8 @@ const BillingSystem: React.FC = () => {
 
       const businessInfo = {
         name: 'Maheshwari Agency',
-        address: 'Your Business Address',
-        phone: 'Your Phone Number'
+        address: 'matakari galli shegaon',
+        phone: '9970041700'
       };
 
       await bluetoothPrinter.printReceipt(currentBill, businessInfo, t);
@@ -273,8 +273,8 @@ const BillingSystem: React.FC = () => {
     try {
       const businessInfo = {
         name: 'Maheshwari Agency',
-        address: 'Your Business Address',
-        phone: 'Your Phone Number'
+        address: 'matakari galli shegaon',
+        phone: '9970041700'
       };
 
       await downloadPDF(currentBill, businessInfo, undefined, t);
@@ -291,8 +291,8 @@ const BillingSystem: React.FC = () => {
     try {
       const businessInfo = {
         name: 'Maheshwari Agency',
-        address: 'Your Business Address',
-        phone: 'Your Phone Number'
+        address: 'matakari galli shegaon',
+        phone: '9970041700'
       };
 
       await sharePDF(currentBill, businessInfo, t);
@@ -479,9 +479,24 @@ const BillingSystem: React.FC = () => {
                 <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex-1">
                     <h4 className="font-medium">{item.item_name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {item.unit_price.toFixed(2)} per {item.unit}
-                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Input
+                        type="number"
+                        value={item.unit_price}
+                        onChange={(e) => {
+                          const newPrice = parseFloat(e.target.value) || 0;
+                          setBillItems(prev => prev.map(bi => 
+                            bi.item_id === item.item_id 
+                              ? { ...bi, unit_price: newPrice, total_price: newPrice * bi.quantity }
+                              : bi
+                          ));
+                        }}
+                        className="w-24 h-8 text-sm"
+                        step="0.01"
+                        min="0"
+                      />
+                      <span className="text-xs text-muted-foreground">per unit</span>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button

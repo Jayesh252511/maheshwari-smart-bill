@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Download, Share, Receipt, Calendar, User, DollarSign, Edit } from 'lucide-react';
+import { Search, Eye, Download, Share, Receipt, Calendar, User, DollarSign, Edit, Printer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -95,8 +95,8 @@ const BillsHistory: React.FC = () => {
     try {
       const businessInfo = {
         name: 'Maheshwari Agency',
-        address: 'Your Business Address',
-        phone: 'Your Phone Number'
+        address: 'matakari galli shegaon',
+        phone: '9970041700'
       };
 
       await downloadPDF(bill, businessInfo);
@@ -111,8 +111,8 @@ const BillsHistory: React.FC = () => {
     try {
       const businessInfo = {
         name: 'Maheshwari Agency',
-        address: 'Your Business Address',
-        phone: 'Your Phone Number'
+        address: 'matakari galli shegaon',
+        phone: '9970041700'
       };
 
       await sharePDF(bill, businessInfo);
@@ -120,6 +120,31 @@ const BillsHistory: React.FC = () => {
     } catch (error) {
       console.error('Share error:', error);
       toast.error('Failed to share PDF');
+    }
+  };
+
+  const handlePrintBill = async (bill: Bill) => {
+    try {
+      const businessInfo = {
+        name: 'Maheshwari Agency',
+        address: 'matakari galli shegaon',
+        phone: '9970041700'
+      };
+
+      const { bluetoothPrinter } = await import('@/utils/bluetoothPrinter');
+      
+      if (!bluetoothPrinter.isConnected()) {
+        const devices = await bluetoothPrinter.scanForPrinters();
+        if (devices.length > 0) {
+          await bluetoothPrinter.connectToPrinter(devices[0]);
+        }
+      }
+
+      await bluetoothPrinter.printReceipt(bill, businessInfo, t);
+      toast.success('Bill printed successfully!');
+    } catch (error) {
+      console.error('Print error:', error);
+      toast.error('Failed to print bill');
     }
   };
 
@@ -258,6 +283,14 @@ const BillsHistory: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => handlePrintBill(bill)}
+                      title="Print Bill"
+                    >
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleDownloadPDF(bill)}
                       title="Download PDF"
                     >
@@ -348,6 +381,14 @@ const BillsHistory: React.FC = () => {
 
               {/* Actions */}
               <div className="space-y-2">
+                <Button 
+                  onClick={() => handlePrintBill(selectedBill)} 
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print Bill
+                </Button>
                 <Button 
                   onClick={() => handleDownloadPDF(selectedBill)} 
                   className="w-full"
