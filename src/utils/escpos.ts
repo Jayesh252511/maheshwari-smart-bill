@@ -69,18 +69,19 @@ export function generateReceiptData(bill: any, businessInfo: any, t?: (key: stri
     receipt += LF;
   }
   
-  // Table header - full width columns
-  receipt += padRight('Item', 13) + padCenter('Qty', 7) + padLeft('Price', 12) + LF;
+  // Table header - professional 4-column layout
+  receipt += padRight('Item', 8) + padCenter('Qty', 5) + padRight('Rate', 9) + padLeft('Amt', 10) + LF;
   receipt += '================================' + LF;
   
-  // Items - using full width with proper alignment
+  // Items - full width with all details
   let totalQuantity = 0;
   bill.items.forEach((item: any) => {
     totalQuantity += item.quantity;
-    const itemName = padRight(item.item_name, 13);
-    const qty = BOLD_ON + padCenter(String(item.quantity), 7) + BOLD_OFF;
-    const price = BOLD_ON + padLeft(item.unit_price.toFixed(2), 12) + BOLD_OFF;
-    receipt += itemName + qty + price + LF;
+    const itemName = padRight(item.item_name, 8);
+    const qty = BOLD_ON + padCenter(String(item.quantity), 5) + BOLD_OFF;
+    const rate = padRight(item.unit_price.toFixed(2), 9);
+    const amount = BOLD_ON + padLeft(item.total_price.toFixed(2), 10) + BOLD_OFF;
+    receipt += itemName + qty + rate + amount + LF;
   });
   
   receipt += '================================' + LF;
