@@ -75,13 +75,13 @@ const Index = () => {
   return (
     <Layout title={getPageTitle()}>
       {currentPage !== 'dashboard' && (
-        <div className="mb-4">
+        <div className="mb-3 sm:mb-4">
           <Button
             variant="ghost"
             onClick={() => setCurrentPage('dashboard')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 text-sm sm:text-base"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
             Back to Dashboard
           </Button>
         </div>

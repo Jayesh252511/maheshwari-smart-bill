@@ -16,7 +16,7 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any, t?: (key
   doc.setFont('helvetica', 'normal');
   doc.text('matakari galli shegaon', pageWidth / 2, y, { align: 'center' });
   y += 7;
-  doc.text('Tel: 9970041700', pageWidth / 2, y, { align: 'center' });
+  doc.text('Tel: 7020709696', pageWidth / 2, y, { align: 'center' });
   y += 7;
   
   // Line separator
@@ -34,8 +34,9 @@ export async function generatePDFInvoice(bill: Bill, businessInfo: any, t?: (key
   doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
   doc.text(`${t ? t('billNo') : 'Bill No'}: ${String(bill.bill_number).padStart(2, '0')}`, 20, y);
-  doc.text(`${t ? t('date') : 'Date'}: ${new Date(bill.created_at).toLocaleDateString()}`, pageWidth - 20, y, { align: 'right' });
-  y += 15;
+  y += 7;
+  doc.text(`${t ? t('date') : 'Date'}: ${new Date(bill.created_at).toLocaleDateString()}`, 20, y);
+  y += 10;
   
   // Customer details
   if (bill.customer_name) {

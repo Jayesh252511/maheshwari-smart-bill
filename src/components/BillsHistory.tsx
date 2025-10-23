@@ -96,7 +96,7 @@ const BillsHistory: React.FC = () => {
       const businessInfo = {
         name: 'Maheshwari Agency',
         address: 'matakari galli shegaon',
-        phone: '9970041700'
+        phone: '7020709696'
       };
 
       await downloadPDF(bill, businessInfo);
@@ -112,7 +112,7 @@ const BillsHistory: React.FC = () => {
       const businessInfo = {
         name: 'Maheshwari Agency',
         address: 'matakari galli shegaon',
-        phone: '9970041700'
+        phone: '7020709696'
       };
 
       await sharePDF(bill, businessInfo);
@@ -128,7 +128,7 @@ const BillsHistory: React.FC = () => {
       const businessInfo = {
         name: 'Maheshwari Agency',
         address: 'matakari galli shegaon',
-        phone: '9970041700'
+        phone: '7020709696'
       };
 
       const { bluetoothPrinter } = await import('@/utils/bluetoothPrinter');

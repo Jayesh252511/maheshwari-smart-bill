@@ -254,7 +254,7 @@ const BillingSystem: React.FC = () => {
       const businessInfo = {
         name: 'Maheshwari Agency',
         address: 'matakari galli shegaon',
-        phone: '9970041700'
+        phone: '7020709696'
       };
 
       await bluetoothPrinter.printReceipt(currentBill, businessInfo, t);
@@ -274,7 +274,7 @@ const BillingSystem: React.FC = () => {
       const businessInfo = {
         name: 'Maheshwari Agency',
         address: 'matakari galli shegaon',
-        phone: '9970041700'
+        phone: '7020709696'
       };
 
       await downloadPDF(currentBill, businessInfo, undefined, t);
@@ -292,7 +292,7 @@ const BillingSystem: React.FC = () => {
       const businessInfo = {
         name: 'Maheshwari Agency',
         address: 'matakari galli shegaon',
-        phone: '9970041700'
+        phone: '7020709696'
       };
 
       await sharePDF(currentBill, businessInfo, t);

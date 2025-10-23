@@ -160,3 +160,19 @@ All colors MUST be HSL.
     background: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
   }
 }
+
+/* Mobile-specific optimizations */
+@media (max-width: 640px) {
+  .creative-card {
+    @apply hover:scale-100;
+  }
+  
+  body {
+    font-size: 14px;
+  }
+  
+  /* Ensure buttons are touch-friendly */
+  button, a {
+    min-height: 44px;
+  }
+}
