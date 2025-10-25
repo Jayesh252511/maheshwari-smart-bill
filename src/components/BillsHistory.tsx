@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Download, Share, Receipt, Calendar, User, DollarSign, Edit, Printer } from 'lucide-react';
+import { Search, Eye, Download, Share, Receipt, Calendar, User, DollarSign, Edit, Printer, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -151,6 +151,32 @@ const BillsHistory: React.FC = () => {
   const handleEditBill = (bill: Bill) => {
     setEditBill(bill);
     setEditOpen(true);
+  };
+
+  const handleDeleteBill = async (billId: string) => {
+    try {
+      // Delete bill items first
+      const { error: itemsError } = await supabase
+        .from('bill_items')
+        .delete()
+        .eq('bill_id', billId);
+
+      if (itemsError) throw itemsError;
+
+      // Delete bill
+      const { error: billError } = await supabase
+        .from('bills')
+        .delete()
+        .eq('id', billId);
+
+      if (billError) throw billError;
+
+      toast.success('Bill deleted successfully');
+      fetchBills();
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error('Failed to delete bill');
+    }
   };
 
   const getTotalRevenue = () => {
@@ -306,6 +332,14 @@ const BillsHistory: React.FC = () => {
                         <Share className="h-4 w-4" />
                       </Button>
                     )}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteBill(bill.id)}
+                      title="Delete Bill"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </CardContent>
