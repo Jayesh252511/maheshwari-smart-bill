@@ -131,7 +131,6 @@ const AIVoiceAssistant: React.FC<AIVoiceAssistantProps> = ({
           body: { 
             message: transcribedText,
             type: 'voice_billing_numbered',
-            userId: user?.id,
             availableItems: availableItems
           }
         });
