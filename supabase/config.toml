@@ -8,10 +8,10 @@ extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
 [functions.voice-to-text]
-verify_jwt = true
+verify_jwt = false
 
 [functions.ai-chat]
-verify_jwt = true
+verify_jwt = false
 
 [functions.text-to-speech]
-verify_jwt = true
+verify_jwt = false

@@ -4,16 +4,42 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { message, type, userId, availableItems } = await req.json();
+    // Verify the user's JWT and extract their ID
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const userId = claimsData.claims.sub;
+
+    const { message, type, availableItems } = await req.json();
     
     if (!message) {
       throw new Error('Message is required');
@@ -21,7 +47,7 @@ serve(async (req) => {
 
     console.log(`Processing AI chat request - Type: ${type}, User: ${userId}`);
 
-    // Initialize Supabase client
+    // Use service role client for data queries (needed to bypass RLS for cross-table joins)
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -30,9 +56,8 @@ serve(async (req) => {
     let systemPrompt = '';
     let contextData = '';
 
-    // Get user's business context if available
+    // Get user's business context using verified userId
     if (userId) {
-      // Fetch recent bills for context
       const { data: bills } = await supabase
         .from('bills')
         .select(`
@@ -49,13 +74,11 @@ serve(async (req) => {
         .order('created_at', { ascending: false })
         .limit(10);
 
-      // Fetch items for inventory context
       const { data: items } = await supabase
         .from('items')
         .select('name, price, description')
         .eq('user_id', userId);
 
-      // Fetch customers for customer context
       const { data: customers } = await supabase
         .from('customers')
         .select('name, phone, address')
@@ -155,7 +178,6 @@ Be friendly, helpful, and provide step-by-step guidance when needed.`;
         systemPrompt = `You are a helpful AI assistant for a point-of-sale system. Assist the user with their query about billing, inventory, customers, or general POS operations.`;
     }
 
-    // Call OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -176,15 +198,12 @@ Be friendly, helpful, and provide step-by-step guidance when needed.`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OpenAI API error:', errorText);
-      throw new Error(`OpenAI API error: ${errorText}`);
+      throw new Error('AI service error');
     }
 
     const data = await response.json();
     const aiResponse = data.choices[0].message.content;
 
-    console.log('AI response:', aiResponse);
-
-    // Try to parse as JSON for voice_billing, otherwise return as text
     let parsedResponse;
     if (type === 'voice_billing' || type === 'voice_billing_numbered') {
       try {
@@ -207,7 +226,7 @@ Be friendly, helpful, and provide step-by-step guidance when needed.`;
   } catch (error) {
     console.error('AI chat error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'An error occurred processing your request' }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

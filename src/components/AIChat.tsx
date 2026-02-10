@@ -71,7 +71,6 @@ const AIChat: React.FC<AIChatProps> = ({ mode = 'support', className }) => {
           body: { 
             message: input,
             type: chatType,
-            userId: user?.id
           }
         });
 
