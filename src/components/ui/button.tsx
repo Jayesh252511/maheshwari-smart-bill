@@ -5,27 +5,24 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 shadow-lg",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97]",
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground hover:shadow-xl hover:scale-[1.02] border border-primary/20",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-md",
-        outline:
-          "border-2 border-primary bg-background text-primary hover:bg-primary hover:text-primary-foreground hover:shadow-lg",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-secondary/50",
-        ghost: "hover:bg-accent/20 hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        success: "bg-success text-success-foreground hover:bg-success/90 shadow-md",
-        warning: "bg-warning text-warning-foreground hover:bg-warning/90 shadow-md",
-        traditional: "bg-gradient-to-r from-accent to-accent/90 text-accent-foreground hover:shadow-xl hover:scale-[1.02] border border-accent/30",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
+        outline: "border border-input bg-background hover:bg-muted text-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-muted hover:text-foreground shadow-none",
+        link: "text-primary underline-offset-4 hover:underline shadow-none",
+        success: "bg-success text-success-foreground hover:bg-success/90 shadow-sm",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/90 shadow-sm",
+        accent: "bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm",
       },
       size: {
         default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
+        sm: "h-9 rounded-lg px-3",
+        lg: "h-11 rounded-lg px-8",
         icon: "h-10 w-10",
         mobile: "h-12 px-6 py-3 text-base",
       },
