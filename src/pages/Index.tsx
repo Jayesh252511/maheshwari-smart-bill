@@ -46,12 +46,12 @@ const Index = () => {
         return <CustomersManager />;
       case 'billing':
         return <BillingSystem />;
-    case 'bills':
-      return <BillsHistory />;
-    case 'reports':
-      return <Reports />;
-    case 'ai-support':
-      return <AICustomerSupport />;
+      case 'bills':
+        return <BillsHistory />;
+      case 'reports':
+        return <Reports />;
+      case 'ai-support':
+        return <AICustomerSupport />;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
@@ -68,21 +68,24 @@ const Index = () => {
       case 'bills':
         return 'Bills & Reports';
       default:
-        return 'Maheshwari Agency';
+        return 'MAHESHWARI AGENCIES';
     }
   };
 
+  // Pages that show back button (not in bottom nav)
+  const showBackButton = ['billing', 'reports', 'ai-support'].includes(currentPage);
+
   return (
-    <Layout title={getPageTitle()}>
-      {currentPage !== 'dashboard' && (
-        <div className="mb-3 sm:mb-4">
+    <Layout title={getPageTitle()} currentPage={currentPage} onNavigate={setCurrentPage}>
+      {showBackButton && (
+        <div className="mb-3">
           <Button
             variant="ghost"
             onClick={() => setCurrentPage('dashboard')}
-            className="flex items-center gap-2 text-sm sm:text-base"
+            className="flex items-center gap-2 text-sm -ml-2"
           >
-            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
-            Back to Dashboard
+            <ArrowLeft className="h-4 w-4" />
+            Back
           </Button>
         </div>
       )}
