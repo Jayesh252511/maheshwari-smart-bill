@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,6 +28,8 @@ const BillingSystem: React.FC = () => {
   const [currentBill, setCurrentBill] = useState<Bill | null>(null);
   const [printerConnected, setPrinterConnected] = useState(false);
   const [itemSearch, setItemSearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { t } = useLocalization();
 
@@ -55,6 +57,23 @@ const BillingSystem: React.FC = () => {
     const q = itemSearch.toLowerCase();
     return items.filter(i => i.name.toLowerCase().includes(q));
   }, [items, itemSearch]);
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectItemFromSearch = (item: Item) => {
+    setSelectedItem(item.id);
+    setItemSearch(item.name);
+    setShowSuggestions(false);
+  };
 
   const addItemToBill = () => {
     if (!selectedItem) { toast.error('Select an item'); return; }
@@ -239,31 +258,55 @@ const BillingSystem: React.FC = () => {
       <div className="bg-card rounded-lg border border-border p-3 space-y-3">
         <h3 className="font-bold text-foreground text-sm">Add Items</h3>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search items..."
-            value={itemSearch}
-            onChange={(e) => setItemSearch(e.target.value)}
-            className="h-10 pl-9 text-sm"
-          />
+        {/* Search with autocomplete */}
+        <div ref={searchRef} className="relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search items... e.g. ki"
+              value={itemSearch}
+              onChange={(e) => {
+                setItemSearch(e.target.value);
+                setShowSuggestions(true);
+                if (!e.target.value.trim()) setSelectedItem('');
+              }}
+              onFocus={() => { if (itemSearch.trim()) setShowSuggestions(true); }}
+              className="h-11 pl-9 text-sm"
+            />
+          </div>
+
+          {/* Suggestions dropdown */}
+          {showSuggestions && itemSearch.trim() && filteredItems.length > 0 && (
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              {filteredItems.map(item => (
+                <button
+                  key={item.id}
+                  className={`w-full text-left px-3 py-2.5 text-sm hover:bg-accent flex items-center justify-between transition-colors ${
+                    selectedItem === item.id ? 'bg-accent' : ''
+                  }`}
+                  onClick={() => selectItemFromSearch(item)}
+                >
+                  <span className="font-bold text-foreground">{item.name}</span>
+                  <span className="text-xs text-muted-foreground">₹{item.price}/{item.unit}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {showSuggestions && itemSearch.trim() && filteredItems.length === 0 && (
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg p-3">
+              <p className="text-sm text-muted-foreground text-center">No items found</p>
+            </div>
+          )}
         </div>
 
-        {/* Item Select */}
-        <Select value={selectedItem} onValueChange={setSelectedItem}>
-          <SelectTrigger className="h-11">
-            <SelectValue placeholder="Select item" />
-          </SelectTrigger>
-          <SelectContent>
-            {filteredItems.map(item => (
-              <SelectItem key={item.id} value={item.id}>
-                <span className="font-bold">{item.name}</span>
-                <span className="text-muted-foreground ml-1">(₹{item.price}/{item.unit})</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Selected item badge */}
+        {selectedItem && (
+          <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
+            <span className="text-xs text-primary font-bold">Selected:</span>
+            <span className="text-sm font-bold text-foreground">{items.find(i => i.id === selectedItem)?.name}</span>
+          </div>
+        )}
 
         {/* Quantity + Add */}
         <div className="flex gap-2">
