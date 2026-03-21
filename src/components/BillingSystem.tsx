@@ -28,6 +28,8 @@ const BillingSystem: React.FC = () => {
   const [currentBill, setCurrentBill] = useState<Bill | null>(null);
   const [printerConnected, setPrinterConnected] = useState(false);
   const [itemSearch, setItemSearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { t } = useLocalization();
 
