@@ -58,6 +58,23 @@ const BillingSystem: React.FC = () => {
     return items.filter(i => i.name.toLowerCase().includes(q));
   }, [items, itemSearch]);
 
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectItemFromSearch = (item: Item) => {
+    setSelectedItem(item.id);
+    setItemSearch(item.name);
+    setShowSuggestions(false);
+  };
+
   const addItemToBill = () => {
     if (!selectedItem) { toast.error('Select an item'); return; }
     const item = items.find(i => i.id === selectedItem);
