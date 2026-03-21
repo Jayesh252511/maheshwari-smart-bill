@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Minus, Plus, Save, X } from 'lucide-react';
+import { Minus, Plus, Save, X, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -27,6 +26,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
   const [selectedCustomer, setSelectedCustomer] = useState(bill.customer_id);
   const [billItems, setBillItems] = useState<BillItem[]>(bill.items);
   const [loading, setLoading] = useState(false);
+  const [itemSearch, setItemSearch] = useState('');
 
   useEffect(() => {
     if (open && user) {
@@ -37,45 +37,30 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
 
   const fetchCustomers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('name');
-
+      const { data, error } = await supabase.from('customers').select('*').eq('user_id', user?.id).order('name');
       if (error) throw error;
       setCustomers(data || []);
-    } catch (error) {
-      console.error('Error fetching customers:', error);
-      toast.error('Failed to load customers');
-    }
+    } catch { toast.error('Failed to load customers'); }
   };
 
   const fetchItems = async () => {
     try {
-      const { data, error } = await supabase
-        .from('items')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('name');
-
+      const { data, error } = await supabase.from('items').select('*').eq('user_id', user?.id).order('name');
       if (error) throw error;
       setItems(data || []);
-    } catch (error) {
-      console.error('Error fetching items:', error);
-      toast.error('Failed to load items');
-    }
+    } catch { toast.error('Failed to load items'); }
   };
+
+  const filteredItems = useMemo(() => {
+    if (!itemSearch.trim()) return items;
+    const q = itemSearch.toLowerCase();
+    return items.filter(i => i.name.toLowerCase().includes(q));
+  }, [items, itemSearch]);
 
   const addItem = () => {
     const newItem: BillItem = {
-      id: `temp_${Date.now()}`,
-      item_id: '',
-      item_name: '',
-      quantity: 1,
-      unit_price: 0,
-      total_price: 0,
-      unit: 'patti'
+      id: `temp_${Date.now()}`, item_id: '', item_name: '', quantity: 0,
+      unit_price: 0, total_price: 0, unit: 'patti'
     };
     setBillItems([...billItems, newItem]);
   };
@@ -83,7 +68,6 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
   const updateBillItem = (index: number, field: keyof BillItem, value: any) => {
     const updatedItems = [...billItems];
     const item = updatedItems[index];
-    
     if (field === 'item_id') {
       const selectedItem = items.find(i => i.id === value);
       if (selectedItem) {
@@ -94,246 +78,193 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
         item.total_price = item.quantity * selectedItem.price;
       }
     } else if (field === 'quantity') {
-      item.quantity = Math.max(1, parseInt(value) || 1);
+      item.quantity = Math.max(0, parseInt(value) || 0);
+      item.total_price = item.quantity * item.unit_price;
+    } else if (field === 'unit_price') {
+      item.unit_price = parseFloat(value) || 0;
       item.total_price = item.quantity * item.unit_price;
     } else {
       (item as any)[field] = value;
     }
-    
     setBillItems(updatedItems);
   };
 
-  const removeBillItem = (index: number) => {
-    setBillItems(billItems.filter((_, i) => i !== index));
-  };
+  const removeBillItem = (index: number) => setBillItems(billItems.filter((_, i) => i !== index));
 
   const calculateTotals = () => {
     const subtotal = billItems.reduce((sum, item) => sum + item.total_price, 0);
-    const tax_amount = 0; // No tax as per requirement
-    const total_amount = subtotal + tax_amount;
-    
-    return { subtotal, tax_amount, total_amount };
+    return { subtotal, tax_amount: 0, total_amount: subtotal };
   };
 
   const handleUpdateBill = async () => {
-    if (!selectedCustomer) {
-      toast.error('Please select a customer');
-      return;
-    }
-
+    if (!selectedCustomer) { toast.error('Please select a customer'); return; }
     if (billItems.length === 0 || billItems.some(item => !item.item_id)) {
-      toast.error('Please add at least one valid item');
-      return;
+      toast.error('Please add at least one valid item'); return;
     }
-
     setLoading(true);
     try {
       const { subtotal, tax_amount, total_amount } = calculateTotals();
-      
-      // Update bill
-      const { error: billError } = await supabase
-        .from('bills')
-        .update({
-          customer_id: selectedCustomer,
-          subtotal,
-          tax_amount,
-          total_amount,
-          updated_at: new Date().toISOString()
-        })
+      const { error: billError } = await supabase.from('bills')
+        .update({ customer_id: selectedCustomer, subtotal, tax_amount, total_amount, updated_at: new Date().toISOString() })
         .eq('id', bill.id);
-
       if (billError) throw billError;
 
-      // Delete existing bill items
-      const { error: deleteError } = await supabase
-        .from('bill_items')
-        .delete()
-        .eq('bill_id', bill.id);
-
+      const { error: deleteError } = await supabase.from('bill_items').delete().eq('bill_id', bill.id);
       if (deleteError) throw deleteError;
 
-      // Insert updated bill items
-      const billItemsData = billItems.map(item => ({
-        bill_id: bill.id,
-        item_id: item.item_id,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        total_price: item.total_price
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('bill_items')
-        .insert(billItemsData);
-
+      const { error: itemsError } = await supabase.from('bill_items')
+        .insert(billItems.map(item => ({ bill_id: bill.id, item_id: item.item_id, quantity: item.quantity, unit_price: item.unit_price, total_price: item.total_price })));
       if (itemsError) throw itemsError;
 
       toast.success('Bill updated successfully!');
       onOpenChange(false);
       onBillUpdated();
-    } catch (error) {
-      console.error('Error updating bill:', error);
-      toast.error('Failed to update bill');
-    } finally {
-      setLoading(false);
-    }
+    } catch { toast.error('Failed to update bill'); } finally { setLoading(false); }
   };
 
   const { subtotal, total_amount } = calculateTotals();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{t('edit')} {t('bills')} - {bill.bill_number}</DialogTitle>
-          <DialogDescription>
-            Update bill details and items
-          </DialogDescription>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base font-bold">Edit Bills - {bill.bill_number}</DialogTitle>
+          <DialogDescription className="text-xs">Update bill details and items</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Customer Selection */}
+        <div className="space-y-3">
+          {/* Customer */}
           <div>
-            <Label htmlFor="customer">{t('customers')}</Label>
+            <Label className="text-xs font-medium text-muted-foreground">Customers</Label>
             <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
-              <SelectTrigger>
-                <SelectValue placeholder={`Select ${t('customers').toLowerCase()}`} />
+              <SelectTrigger className="h-11 mt-1">
+                <SelectValue placeholder="Select customer" />
               </SelectTrigger>
               <SelectContent>
-                {customers.map((customer) => (
-                  <SelectItem key={customer.id} value={customer.id}>
-                    {customer.name}
-                  </SelectItem>
+                {customers.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Items Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>{t('items')}</CardTitle>
-                <Button onClick={addItem} variant="outline" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('add')} {t('items')}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {billItems.map((billItem, index) => (
-                <div key={index} className="grid grid-cols-12 gap-3 items-end p-3 border rounded-lg">
-                  <div className="col-span-4">
-                    <Label>{t('items')}</Label>
-                    <Select
-                      value={billItem.item_id}
-                      onValueChange={(value) => updateBillItem(index, 'item_id', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={`Select ${t('items').toLowerCase()}`} />
+          {/* Items */}
+          <div className="bg-card rounded-lg border border-border p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-sm text-foreground">Items</h3>
+              <Button onClick={addItem} variant="outline" size="sm" className="h-8 text-xs">
+                <Plus className="h-3 w-3 mr-1" /> Add Items
+              </Button>
+            </div>
+
+            {billItems.map((billItem, index) => (
+              <div key={index} className="border border-border rounded-lg p-3 space-y-2">
+                {/* Row 1: Item select + remove */}
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-xs font-bold text-foreground">Items</Label>
+                    <Select value={billItem.item_id} onValueChange={(v) => updateBillItem(index, 'item_id', v)}>
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Select item" />
                       </SelectTrigger>
                       <SelectContent>
-                        {items.map((item) => (
+                        <div className="p-2">
+                          <div className="relative mb-2">
+                            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                            <Input
+                              placeholder="Search..."
+                              value={itemSearch}
+                              onChange={(e) => setItemSearch(e.target.value)}
+                              className="h-8 pl-7 text-xs"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        </div>
+                        {filteredItems.map(item => (
                           <SelectItem key={item.id} value={item.id}>
-                            {item.name} ({item.price}/{item.unit})
+                            <span className="font-bold">{item.name}</span>
+                            <span className="text-muted-foreground ml-1">({item.price}/{item.unit})</span>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  
-                  <div className="col-span-2">
-                    <Label>Quantity</Label>
-                    <div className="flex items-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateBillItem(index, 'quantity', billItem.quantity - 1)}
-                        disabled={billItem.quantity <= 1}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        value={billItem.quantity}
-                        onChange={(e) => updateBillItem(index, 'quantity', e.target.value)}
-                        className="mx-1 text-center"
-                        min="1"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateBillItem(index, 'quantity', billItem.quantity + 1)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="col-span-2">
-                    <Label>{t('unit')}</Label>
-                    <Input value={billItem.unit} disabled />
-                  </div>
-                  
-                  <div className="col-span-2">
-                    <Label>{t('price')}</Label>
-                    <Input value={billItem.unit_price.toFixed(2)} disabled />
-                  </div>
-                  
-                  <div className="col-span-1">
-                    <Label>{t('total')}</Label>
-                    <Input value={billItem.total_price.toFixed(2)} disabled />
-                  </div>
-                  
-                  <div className="col-span-1">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => removeBillItem(index)}
-                    >
+                  <div className="pt-5">
+                    <Button variant="destructive" size="icon" className="h-10 w-10" onClick={() => removeBillItem(index)}>
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
-              ))}
-              
-              {billItems.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No items added yet. Click "Add Item" to start.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
-          {/* Bill Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Bill Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Items: {billItems.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>{t('subtotal')}:</span>
-                  <span>{subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between font-bold text-lg border-t pt-2">
-                  <span>{t('total')}:</span>
-                  <span>{total_amount.toFixed(2)}</span>
+                {/* Row 2: Quantity, Unit, Price, Total */}
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-foreground">Quantity</Label>
+                    <div className="flex items-center gap-1">
+                      <Button variant="outline" size="icon" className="h-8 w-8 flex-shrink-0"
+                        onClick={() => updateBillItem(index, 'quantity', billItem.quantity - 1)}
+                        disabled={billItem.quantity <= 0}>
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <Input
+                        type="number" value={billItem.quantity}
+                        onChange={(e) => updateBillItem(index, 'quantity', e.target.value)}
+                        className="h-8 text-center text-sm font-bold px-1 min-w-[40px]" min="0"
+                      />
+                      <Button variant="outline" size="icon" className="h-8 w-8 flex-shrink-0"
+                        onClick={() => updateBillItem(index, 'quantity', billItem.quantity + 1)}>
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-foreground">Unit</Label>
+                    <Input value={billItem.unit} disabled className="h-8 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-foreground">Price</Label>
+                    <Input
+                      type="number" value={billItem.unit_price}
+                      onChange={(e) => updateBillItem(index, 'unit_price', e.target.value)}
+                      className="h-8 text-sm" min="0"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-foreground">Total</Label>
+                    <Input value={billItem.total_price.toFixed(0)} disabled className="h-8 text-sm font-bold" />
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            ))}
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <Button onClick={handleUpdateBill} disabled={loading} className="flex-1">
-              <Save className="h-4 w-4 mr-2" />
-              {loading ? 'Updating...' : `${t('save')} ${t('bills')}`}
+            {billItems.length === 0 && (
+              <p className="text-center py-6 text-sm text-muted-foreground">No items added yet.</p>
+            )}
+          </div>
+
+          {/* Summary */}
+          <div className="bg-card rounded-lg border border-border p-3 space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Items: {billItems.length}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Subtotal:</span>
+              <span>₹{subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between font-bold text-base border-t pt-2">
+              <span>Total:</span>
+              <span>₹{total_amount.toFixed(2)}</span>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2">
+            <Button onClick={handleUpdateBill} disabled={loading} className="flex-1 h-10">
+              <Save className="h-4 w-4 mr-1" />
+              {loading ? 'Updating...' : 'Save Bill'}
             </Button>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              {t('cancel')}
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="h-10">
+              Cancel
             </Button>
           </div>
         </div>

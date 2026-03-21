@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Minus, Trash2, Receipt, Download, Share, Bluetooth, X } from 'lucide-react';
+import { Plus, Minus, Trash2, Receipt, Download, Share, Bluetooth, X, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -20,13 +20,14 @@ const BillingSystem: React.FC = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<string>('');
-  const [quantity, setQuantity] = useState<string>('1');
+  const [quantity, setQuantity] = useState<string>('0');
   const [taxRate, setTaxRate] = useState<string>('0');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [currentBill, setCurrentBill] = useState<Bill | null>(null);
   const [printerConnected, setPrinterConnected] = useState(false);
+  const [itemSearch, setItemSearch] = useState('');
   const { user } = useAuth();
   const { t } = useLocalization();
 
@@ -49,11 +50,17 @@ const BillingSystem: React.FC = () => {
 
   const checkPrinterConnection = () => setPrinterConnected(bluetoothPrinter.isConnected());
 
+  const filteredItems = useMemo(() => {
+    if (!itemSearch.trim()) return items;
+    const q = itemSearch.toLowerCase();
+    return items.filter(i => i.name.toLowerCase().includes(q));
+  }, [items, itemSearch]);
+
   const addItemToBill = () => {
-    if (!selectedItem || !quantity) { toast.error('Select item and quantity'); return; }
+    if (!selectedItem) { toast.error('Select an item'); return; }
     const item = items.find(i => i.id === selectedItem);
     if (!item) return;
-    const qty = parseInt(quantity);
+    const qty = parseInt(quantity) || 0;
     if (qty <= 0) { toast.error('Quantity must be > 0'); return; }
 
     const existingIdx = billItems.findIndex(bi => bi.item_id === selectedItem);
@@ -61,7 +68,7 @@ const BillingSystem: React.FC = () => {
       const updated = [...billItems];
       const newQty = updated[existingIdx].quantity + qty;
       updated[existingIdx].quantity = newQty;
-      updated[existingIdx].total_price = newQty * item.price;
+      updated[existingIdx].total_price = newQty * updated[existingIdx].unit_price;
       setBillItems(updated);
     } else {
       setBillItems([...billItems, {
@@ -69,15 +76,19 @@ const BillingSystem: React.FC = () => {
         quantity: qty, unit_price: item.price, total_price: qty * item.price, unit: item.unit
       }]);
     }
-    setSelectedItem(''); setQuantity('1');
+    setSelectedItem(''); setQuantity('0'); setItemSearch('');
   };
 
   const updateItemQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) { removeItemFromBill(itemId); return; }
-    const item = items.find(i => i.id === itemId);
-    if (!item) return;
     setBillItems(prev => prev.map(bi =>
       bi.item_id === itemId ? { ...bi, quantity: newQuantity, total_price: newQuantity * bi.unit_price } : bi
+    ));
+  };
+
+  const updateItemRate = (itemId: string, newRate: number) => {
+    setBillItems(prev => prev.map(bi =>
+      bi.item_id === itemId ? { ...bi, unit_price: newRate, total_price: bi.quantity * newRate } : bi
     ));
   };
 
@@ -150,7 +161,7 @@ const BillingSystem: React.FC = () => {
   };
 
   const resetBill = () => {
-    setSelectedCustomer(''); setBillItems([]); setSelectedItem(''); setQuantity('1'); setTaxRate('0'); setCurrentBill(null); fetchData();
+    setSelectedCustomer(''); setBillItems([]); setSelectedItem(''); setQuantity('0'); setTaxRate('0'); setCurrentBill(null); setItemSearch(''); fetchData();
   };
 
   const handleVoiceAddItems = useCallback((voiceItems: { name: string; quantity: number }[]) => {
@@ -192,11 +203,11 @@ const BillingSystem: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 pb-4">
       {/* Sale Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Sale</h2>
-        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
           printerConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'
         }`}>
           <Bluetooth className="h-3 w-3" />
@@ -205,134 +216,152 @@ const BillingSystem: React.FC = () => {
       </div>
 
       {/* Customer Section */}
-      <div className="section-card p-4 space-y-3">
-        <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">Customer Name *</Label>
-          <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
-            <SelectTrigger className="h-12">
-              <SelectValue placeholder="Select a customer" />
-            </SelectTrigger>
-            <SelectContent>
-              {customers.map(c => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}{c.phone ? ` • ${c.phone}` : ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="bg-card rounded-lg border border-border p-3 space-y-2">
+        <Label className="text-xs font-medium text-muted-foreground">Customer *</Label>
+        <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+          <SelectTrigger className="h-11">
+            <SelectValue placeholder="Select a customer" />
+          </SelectTrigger>
+          <SelectContent>
+            {customers.map(c => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}{c.phone ? ` • ${c.phone}` : ''}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {selectedCustomerData?.phone && (
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Phone Number</Label>
-            <p className="text-sm font-medium text-foreground">{selectedCustomerData.phone}</p>
-          </div>
+          <p className="text-xs text-muted-foreground">📞 {selectedCustomerData.phone}</p>
         )}
       </div>
 
       {/* Add Items Section */}
-      <div className="section-card p-4 space-y-4">
-        <h3 className="font-semibold text-foreground">Add Items to Sale</h3>
-        <div className="space-y-3">
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Item Name</Label>
-            <Select value={selectedItem} onValueChange={setSelectedItem}>
-              <SelectTrigger className="h-12">
-                <SelectValue placeholder="Select item" />
-              </SelectTrigger>
-              <SelectContent>
-                {items.map(item => (
-                  <SelectItem key={item.id} value={item.id}>
-                    {item.name} (₹{item.price}/{item.unit})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      <div className="bg-card rounded-lg border border-border p-3 space-y-3">
+        <h3 className="font-bold text-foreground text-sm">Add Items</h3>
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search items..."
+            value={itemSearch}
+            onChange={(e) => setItemSearch(e.target.value)}
+            className="h-10 pl-9 text-sm"
+          />
+        </div>
+
+        {/* Item Select */}
+        <Select value={selectedItem} onValueChange={setSelectedItem}>
+          <SelectTrigger className="h-11">
+            <SelectValue placeholder="Select item" />
+          </SelectTrigger>
+          <SelectContent>
+            {filteredItems.map(item => (
+              <SelectItem key={item.id} value={item.id}>
+                <span className="font-bold">{item.name}</span>
+                <span className="text-muted-foreground ml-1">(₹{item.price}/{item.unit})</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Quantity + Add */}
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <Label className="text-xs text-muted-foreground">Qty</Label>
+            <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="0" min="0" className="h-10 text-sm" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Quantity</Label>
-              <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="1" min="1" className="h-12" />
-            </div>
-            <div className="flex items-end">
-              <Button onClick={addItemToBill} className="w-full h-12">
-                <Plus className="h-4 w-4 mr-1" /> Add
-              </Button>
-            </div>
+          <div className="flex items-end">
+            <Button onClick={addItemToBill} className="h-10 px-4">
+              <Plus className="h-4 w-4 mr-1" /> Add
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Billed Items */}
       {billItems.length > 0 && (
-        <div className="space-y-3">
-          <div className="bg-success/10 text-success px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span>✓</span> Billed Items
-            </div>
-            <span className="text-xs font-normal">Rate excl. tax</span>
+        <div className="space-y-2">
+          <div className="bg-success/10 text-success px-3 py-2 rounded-lg text-sm font-bold flex items-center justify-between">
+            <span>✓ Billed Items ({billItems.length})</span>
           </div>
 
           {billItems.map((item, index) => (
-            <div key={item.id} className="section-card p-4">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">#{index + 1}</span>
-                  <span className="font-semibold text-foreground">{item.item_name}</span>
+            <div key={item.id} className="bg-card rounded-lg border border-border p-3">
+              {/* Item name and total */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">#{index + 1}</span>
+                  <span className="font-bold text-foreground text-sm truncate">{item.item_name}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">₹ {item.total_price.toFixed(0)}</span>
-                  <button onClick={() => removeItemFromBill(item.item_id)} className="p-1 text-muted-foreground hover:text-destructive">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="font-bold text-sm">₹{item.total_price.toFixed(0)}</span>
+                  <button onClick={() => removeItemFromBill(item.item_id)} className="p-1 text-destructive hover:bg-destructive/10 rounded">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mb-2">
-                Item Subtotal: {item.quantity} x {item.unit_price} = ₹ {item.total_price.toFixed(2)}
-              </p>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" className="h-8 w-8"
-                  onClick={() => updateItemQuantity(item.item_id, item.quantity - 1)}>
-                  <Minus className="h-3 w-3" />
-                </Button>
-                <span className="w-10 text-center text-sm font-medium">{item.quantity}</span>
-                <Button variant="outline" size="icon" className="h-8 w-8"
-                  onClick={() => updateItemQuantity(item.item_id, item.quantity + 1)}>
-                  <Plus className="h-3 w-3" />
-                </Button>
-                <span className="text-xs text-muted-foreground ml-1">× ₹{item.unit_price.toFixed(2)}</span>
+
+              {/* Quantity and Rate row */}
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Quantity controls */}
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground mr-1">Qty:</span>
+                  <Button variant="outline" size="icon" className="h-7 w-7"
+                    onClick={() => updateItemQuantity(item.item_id, item.quantity - 1)}>
+                    <Minus className="h-3 w-3" />
+                  </Button>
+                  <span className="w-8 text-center text-sm font-bold bg-muted rounded px-1 py-0.5">{item.quantity}</span>
+                  <Button variant="outline" size="icon" className="h-7 w-7"
+                    onClick={() => updateItemQuantity(item.item_id, item.quantity + 1)}>
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+
+                {/* Editable Rate */}
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground">Rate:</span>
+                  <Input
+                    type="number"
+                    value={item.unit_price}
+                    onChange={(e) => updateItemRate(item.item_id, parseFloat(e.target.value) || 0)}
+                    className="h-7 w-20 text-sm text-center"
+                    min="0"
+                  />
+                </div>
+
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {item.quantity} × ₹{item.unit_price} = ₹{item.total_price.toFixed(0)}
+                </span>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Totals & Taxes */}
+      {/* Totals */}
       {billItems.length > 0 && (
-        <div className="section-card p-4 space-y-3">
-          <h3 className="font-semibold text-foreground">Totals & Taxes</h3>
-          <div className="border-t pt-3 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal (Rate x Qty)</span>
-              <span>₹ {subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Tax %</span>
-              <div className="flex items-center gap-2">
-                <Input type="number" value={taxRate} onChange={(e) => setTaxRate(e.target.value)}
-                  className="w-16 h-8 text-center text-sm" min="0" max="100" step="0.1" />
-                <span className="text-muted-foreground">₹ {taxAmount.toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="flex justify-between font-bold text-lg border-t border-dashed pt-2">
-              <span>Total Amount:</span>
-              <span>₹ {total.toFixed(2)}</span>
+        <div className="bg-card rounded-lg border border-border p-3 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span>₹{subtotal.toFixed(2)}</span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Tax %</span>
+            <div className="flex items-center gap-2">
+              <Input type="number" value={taxRate} onChange={(e) => setTaxRate(e.target.value)}
+                className="w-14 h-7 text-center text-sm" min="0" max="100" step="0.1" />
+              <span className="text-muted-foreground text-xs">₹{taxAmount.toFixed(2)}</span>
             </div>
           </div>
+          <div className="flex justify-between font-bold text-base border-t border-dashed pt-2">
+            <span>Total:</span>
+            <span>₹{total.toFixed(2)}</span>
+          </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <Button variant="outline" onClick={resetBill}>Clear</Button>
-            <Button onClick={handleCheckout} disabled={saving || billItems.length === 0} className="bg-primary">
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <Button variant="outline" onClick={resetBill} size="sm">Clear</Button>
+            <Button onClick={handleCheckout} disabled={saving || billItems.length === 0} size="sm">
               <Receipt className="h-4 w-4 mr-1" />
               {saving ? 'Saving...' : 'Save Bill'}
             </Button>
@@ -342,15 +371,15 @@ const BillingSystem: React.FC = () => {
 
       {/* Empty State */}
       {billItems.length === 0 && (
-        <div className="section-card flex flex-col items-center justify-center py-12">
-          <Receipt className="h-10 w-10 text-muted-foreground mb-3" />
-          <p className="text-sm font-medium text-foreground mb-1">No items added</p>
-          <p className="text-xs text-muted-foreground">Select a customer and add items to create a bill</p>
+        <div className="bg-card rounded-lg border border-border flex flex-col items-center justify-center py-10">
+          <Receipt className="h-8 w-8 text-muted-foreground mb-2" />
+          <p className="text-sm font-medium text-foreground">No items added</p>
+          <p className="text-xs text-muted-foreground">Select a customer and add items</p>
         </div>
       )}
 
       {/* AI Voice Assistant */}
-      <div className="mt-4">
+      <div className="mt-2">
         <AIVoiceAssistant
           onAddItems={handleVoiceAddItems}
           onSelectCustomer={handleVoiceSelectCustomer}
