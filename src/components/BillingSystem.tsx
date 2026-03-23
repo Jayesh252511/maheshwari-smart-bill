@@ -266,11 +266,11 @@ const BillingSystem: React.FC = () => {
               placeholder="Search items... e.g. ki"
               value={itemSearch}
               onChange={(e) => {
-                setItemSearch(e.target.value);
+              setItemSearch(e.target.value);
                 setShowSuggestions(true);
                 if (!e.target.value.trim()) setSelectedItem('');
               }}
-              onFocus={() => { if (itemSearch.trim()) setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
               className="h-11 pl-9 text-sm"
             />
           </div>
