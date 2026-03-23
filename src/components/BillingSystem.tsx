@@ -58,6 +58,8 @@ const BillingSystem: React.FC = () => {
     return items.filter(i => i.name.toLowerCase().includes(q));
   }, [items, itemSearch]);
 
+  const showDropdown = showSuggestions && filteredItems.length > 0;
+
   // Close suggestions on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
