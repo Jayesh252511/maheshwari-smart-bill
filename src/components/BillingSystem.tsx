@@ -58,6 +58,8 @@ const BillingSystem: React.FC = () => {
     return items.filter(i => i.name.toLowerCase().includes(q));
   }, [items, itemSearch]);
 
+  const showDropdown = showSuggestions && filteredItems.length > 0;
+
   // Close suggestions on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -266,17 +268,17 @@ const BillingSystem: React.FC = () => {
               placeholder="Search items... e.g. ki"
               value={itemSearch}
               onChange={(e) => {
-                setItemSearch(e.target.value);
+              setItemSearch(e.target.value);
                 setShowSuggestions(true);
                 if (!e.target.value.trim()) setSelectedItem('');
               }}
-              onFocus={() => { if (itemSearch.trim()) setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
               className="h-11 pl-9 text-sm"
             />
           </div>
 
           {/* Suggestions dropdown */}
-          {showSuggestions && itemSearch.trim() && filteredItems.length > 0 && (
+          {showDropdown && (
             <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
               {filteredItems.map(item => (
                 <button
@@ -312,7 +314,7 @@ const BillingSystem: React.FC = () => {
         <div className="flex gap-2">
           <div className="flex-1">
             <Label className="text-xs text-muted-foreground">Qty</Label>
-            <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="0" min="0" className="h-10 text-sm" />
+            <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="0" min="0" className="h-10 text-sm font-bold bg-primary/5 border-primary/30" />
           </div>
           <div className="flex items-end">
             <Button onClick={addItemToBill} className="h-10 px-4">
