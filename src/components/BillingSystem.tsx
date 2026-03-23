@@ -314,7 +314,7 @@ const BillingSystem: React.FC = () => {
         <div className="flex gap-2">
           <div className="flex-1">
             <Label className="text-xs text-muted-foreground">Qty</Label>
-            <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="0" min="0" className="h-10 text-sm" />
+            <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="0" min="0" className="h-10 text-sm font-bold bg-primary/5 border-primary/30" />
           </div>
           <div className="flex items-end">
             <Button onClick={addItemToBill} className="h-10 px-4">
