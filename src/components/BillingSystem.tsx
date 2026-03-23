@@ -278,7 +278,7 @@ const BillingSystem: React.FC = () => {
           </div>
 
           {/* Suggestions dropdown */}
-          {showSuggestions && itemSearch.trim() && filteredItems.length > 0 && (
+          {showDropdown && (
             <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
               {filteredItems.map(item => (
                 <button
