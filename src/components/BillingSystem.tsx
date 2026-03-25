@@ -13,6 +13,8 @@ import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill, BillItem, Customer, Item } from '@/types/bill';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import AIVoiceAssistant from './AIVoiceAssistant';
+import { saveOfflineBill, cacheCustomers, cacheItems, getCachedCustomers, getCachedItems, isOnline } from '@/utils/offlineStorage';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const BillingSystem: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
