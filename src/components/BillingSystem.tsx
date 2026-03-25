@@ -150,6 +150,23 @@ const BillingSystem: React.FC = () => {
       if (!customer) throw new Error('Customer not found');
       const { subtotal, taxAmount, total } = calculateTotals();
       const billNumber = await generateBillNumber();
+
+      // If offline, save locally
+      if (!isOnline()) {
+        const offlineBill: Bill = {
+          id: `offline_${Date.now()}`, bill_number: billNumber, customer_id: selectedCustomer,
+          customer_name: customer.name, customer_phone: customer.phone, customer_address: customer.address,
+          items: billItems, subtotal, tax_amount: taxAmount, total_amount: total, status: 'completed', created_at: new Date().toISOString()
+        };
+        saveOfflineBill({
+          ...offlineBill, user_id: user?.id || '', synced: false,
+          items: billItems.map(i => ({ item_id: i.item_id, item_name: i.item_name, quantity: i.quantity, unit_price: i.unit_price, total_price: i.total_price, unit: i.unit }))
+        });
+        refreshPendingCount();
+        toast.success('Bill saved offline! Will sync when back online.');
+        return offlineBill;
+      }
+
       const { data: billData, error: billError } = await supabase.from('bills')
         .insert([{ user_id: user?.id, customer_id: selectedCustomer, bill_number: billNumber, subtotal, tax_amount: taxAmount, total_amount: total, status: 'completed' }])
         .select().single();
