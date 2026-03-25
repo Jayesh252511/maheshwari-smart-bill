@@ -50,7 +50,19 @@ const BillingSystem: React.FC = () => {
       if (itemsRes.error) throw itemsRes.error;
       setCustomers(customersRes.data || []);
       setItems(itemsRes.data || []);
-    } catch { toast.error('Failed to load data'); } finally { setLoading(false); }
+      // Cache for offline use
+      cacheCustomers(customersRes.data || []);
+      cacheItems(itemsRes.data || []);
+    } catch {
+      // Fall back to cached data if offline
+      if (!isOnline()) {
+        setCustomers(getCachedCustomers());
+        setItems(getCachedItems());
+        toast.info('Loaded cached data (offline mode)');
+      } else {
+        toast.error('Failed to load data');
+      }
+    } finally { setLoading(false); }
   };
 
   const checkPrinterConnection = () => setPrinterConnected(bluetoothPrinter.isConnected());
