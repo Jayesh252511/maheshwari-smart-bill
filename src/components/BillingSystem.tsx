@@ -260,11 +260,25 @@ const BillingSystem: React.FC = () => {
       {/* Sale Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Sale</h2>
-        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-          printerConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'
-        }`}>
-          <Bluetooth className="h-3 w-3" />
-          {printerConnected ? 'Connected' : 'Disconnected'}
+        <div className="flex items-center gap-2">
+          {/* Online/Offline status */}
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+            online ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+          }`}>
+            <span className={`h-2 w-2 rounded-full ${online ? 'bg-success' : 'bg-warning animate-pulse'}`} />
+            {online ? 'Online' : 'Offline'}
+            {pendingCount > 0 && (
+              <span className="ml-1 bg-warning/20 text-warning px-1.5 py-0.5 rounded-full text-[10px] font-bold">
+                {pendingCount} pending
+              </span>
+            )}
+          </div>
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+            printerConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'
+          }`}>
+            <Bluetooth className="h-3 w-3" />
+            {printerConnected ? 'Connected' : 'Disconnected'}
+          </div>
         </div>
       </div>
 
