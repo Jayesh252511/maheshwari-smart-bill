@@ -13,6 +13,8 @@ import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill, BillItem, Customer, Item } from '@/types/bill';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import AIVoiceAssistant from './AIVoiceAssistant';
+import { saveOfflineBill, cacheCustomers, cacheItems, getCachedCustomers, getCachedItems, isOnline } from '@/utils/offlineStorage';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const BillingSystem: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -32,6 +34,7 @@ const BillingSystem: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { t } = useLocalization();
+  const { online, pendingCount, refreshPendingCount } = useOnlineStatus();
 
   useEffect(() => {
     if (user) { fetchData(); checkPrinterConnection(); }
@@ -47,7 +50,19 @@ const BillingSystem: React.FC = () => {
       if (itemsRes.error) throw itemsRes.error;
       setCustomers(customersRes.data || []);
       setItems(itemsRes.data || []);
-    } catch { toast.error('Failed to load data'); } finally { setLoading(false); }
+      // Cache for offline use
+      cacheCustomers(customersRes.data || []);
+      cacheItems(itemsRes.data || []);
+    } catch {
+      // Fall back to cached data if offline
+      if (!isOnline()) {
+        setCustomers(getCachedCustomers());
+        setItems(getCachedItems());
+        toast.info('Loaded cached data (offline mode)');
+      } else {
+        toast.error('Failed to load data');
+      }
+    } finally { setLoading(false); }
   };
 
   const checkPrinterConnection = () => setPrinterConnected(bluetoothPrinter.isConnected());
@@ -135,6 +150,23 @@ const BillingSystem: React.FC = () => {
       if (!customer) throw new Error('Customer not found');
       const { subtotal, taxAmount, total } = calculateTotals();
       const billNumber = await generateBillNumber();
+
+      // If offline, save locally
+      if (!isOnline()) {
+        const offlineBill: Bill = {
+          id: `offline_${Date.now()}`, bill_number: billNumber, customer_id: selectedCustomer,
+          customer_name: customer.name, customer_phone: customer.phone, customer_address: customer.address,
+          items: billItems, subtotal, tax_amount: taxAmount, total_amount: total, status: 'completed', created_at: new Date().toISOString()
+        };
+        saveOfflineBill({
+          ...offlineBill, user_id: user?.id || '', synced: false,
+          items: billItems.map(i => ({ item_id: i.item_id, item_name: i.item_name, quantity: i.quantity, unit_price: i.unit_price, total_price: i.total_price, unit: i.unit }))
+        });
+        refreshPendingCount();
+        toast.success('Bill saved offline! Will sync when back online.');
+        return offlineBill;
+      }
+
       const { data: billData, error: billError } = await supabase.from('bills')
         .insert([{ user_id: user?.id, customer_id: selectedCustomer, bill_number: billNumber, subtotal, tax_amount: taxAmount, total_amount: total, status: 'completed' }])
         .select().single();
@@ -228,11 +260,25 @@ const BillingSystem: React.FC = () => {
       {/* Sale Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">Sale</h2>
-        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-          printerConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'
-        }`}>
-          <Bluetooth className="h-3 w-3" />
-          {printerConnected ? 'Connected' : 'Disconnected'}
+        <div className="flex items-center gap-2">
+          {/* Online/Offline status */}
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+            online ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+          }`}>
+            <span className={`h-2 w-2 rounded-full ${online ? 'bg-success' : 'bg-warning animate-pulse'}`} />
+            {online ? 'Online' : 'Offline'}
+            {pendingCount > 0 && (
+              <span className="ml-1 bg-warning/20 text-warning px-1.5 py-0.5 rounded-full text-[10px] font-bold">
+                {pendingCount} pending
+              </span>
+            )}
+          </div>
+          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+            printerConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'
+          }`}>
+            <Bluetooth className="h-3 w-3" />
+            {printerConnected ? 'Connected' : 'Disconnected'}
+          </div>
         </div>
       </div>
 
