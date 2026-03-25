@@ -34,6 +34,7 @@ const BillingSystem: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { t } = useLocalization();
+  const { online, pendingCount, refreshPendingCount } = useOnlineStatus();
 
   useEffect(() => {
     if (user) { fetchData(); checkPrinterConnection(); }
