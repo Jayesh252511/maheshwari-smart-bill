@@ -264,7 +264,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
               {loading ? t('updating') : t('saveBill')}
             </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)} className="h-10">
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         </div>
