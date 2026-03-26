@@ -119,7 +119,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
       toast.success(t('billUpdated'));
       onOpenChange(false);
       onBillUpdated();
-    } catch { toast.error('Failed to update bill'); } finally { setLoading(false); }
+    } catch { toast.error(t('failedToUpdateBill')); } finally { setLoading(false); }
   };
 
   const { subtotal, total_amount } = calculateTotals();
