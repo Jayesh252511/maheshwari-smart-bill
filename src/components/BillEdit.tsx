@@ -218,7 +218,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-foreground">Unit</Label>
+                    <Label className="text-xs font-bold text-foreground">{t('unit')}</Label>
                     <Input value={billItem.unit} disabled className="h-8 text-sm" />
                   </div>
                   <div className="space-y-1">
