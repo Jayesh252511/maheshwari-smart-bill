@@ -209,8 +209,8 @@ const BillingSystem: React.FC = () => {
 
   const handleSharePDF = async () => {
     if (!currentBill) return;
-    try { await sharePDF(currentBill, { name: 'Maheshwari Agency', address: 'matakari galli shegaon', phone: '7020709696' }, t); toast.success('Shared!'); }
-    catch { toast.error('Failed to share PDF'); }
+    try { await sharePDF(currentBill, { name: 'Maheshwari Agency', address: 'matakari galli shegaon', phone: '7020709696' }, t); toast.success(t('shared')); }
+    catch { toast.error(t('failedToSharePDF')); }
   };
 
   const resetBill = () => {
