@@ -93,7 +93,7 @@ const BillingSystem: React.FC = () => {
   };
 
   const addItemToBill = () => {
-    if (!selectedItem) { toast.error('Select an item'); return; }
+    if (!selectedItem) { toast.error(t('selectAnItem')); return; }
     const item = items.find(i => i.id === selectedItem);
     if (!item) return;
     const qty = parseInt(quantity) || 0;
