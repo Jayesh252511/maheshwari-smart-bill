@@ -277,7 +277,7 @@ const BillingSystem: React.FC = () => {
             printerConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'
           }`}>
             <Bluetooth className="h-3 w-3" />
-            {printerConnected ? 'Connected' : 'Disconnected'}
+            {printerConnected ? t('connected') : t('disconnected')}
           </div>
         </div>
       </div>
