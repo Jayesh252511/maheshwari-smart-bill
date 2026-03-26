@@ -197,8 +197,8 @@ const BillingSystem: React.FC = () => {
         if (devices.length > 0) { await bluetoothPrinter.connectToPrinter(devices[0]); setPrinterConnected(true); }
       }
       await bluetoothPrinter.printReceipt(currentBill, { name: 'Maheshwari Agency', address: 'matakari galli shegaon', phone: '7020709696' }, t);
-      toast.success('Printed!'); resetBill(); setPrintDialogOpen(false);
-    } catch (e) { toast.error(`Print failed: ${e}`); }
+      toast.success(t('printed')); resetBill(); setPrintDialogOpen(false);
+    } catch (e) { toast.error(t('printFailed')); }
   };
 
   const handleDownloadPDF = async () => {
