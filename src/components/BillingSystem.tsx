@@ -464,8 +464,8 @@ const BillingSystem: React.FC = () => {
       {billItems.length === 0 && (
         <div className="bg-card rounded-lg border border-border flex flex-col items-center justify-center py-10">
           <Receipt className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm font-medium text-foreground">No items added</p>
-          <p className="text-xs text-muted-foreground">Select a customer and add items</p>
+          <p className="text-sm font-medium text-foreground">{t('noItemsAdded')}</p>
+          <p className="text-xs text-muted-foreground">{t('selectCustomerAndAddItems')}</p>
         </div>
       )}
 
