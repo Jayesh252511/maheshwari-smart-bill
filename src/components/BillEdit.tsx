@@ -40,7 +40,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
       const { data, error } = await supabase.from('customers').select('*').eq('user_id', user?.id).order('name');
       if (error) throw error;
       setCustomers(data || []);
-    } catch { toast.error('Failed to load customers'); }
+    } catch { toast.error(t('failedToLoadCustomers')); }
   };
 
   const fetchItems = async () => {
