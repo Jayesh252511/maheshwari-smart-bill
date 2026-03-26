@@ -147,7 +147,7 @@ const BillingSystem: React.FC = () => {
     setSaving(true);
     try {
       const customer = customers.find(c => c.id === selectedCustomer);
-      if (!customer) throw new Error('Customer not found');
+      if (!customer) throw new Error(t('customerNotFound'));
       const { subtotal, taxAmount, total } = calculateTotals();
       const billNumber = await generateBillNumber();
 
