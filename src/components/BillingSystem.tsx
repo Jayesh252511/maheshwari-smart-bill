@@ -438,7 +438,7 @@ const BillingSystem: React.FC = () => {
             <span>₹{subtotal.toFixed(2)}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Tax %</span>
+            <span className="text-muted-foreground">{t('taxPercent')}</span>
             <div className="flex items-center gap-2">
               <Input type="number" value={taxRate} onChange={(e) => setTaxRate(e.target.value)}
                 className="w-14 h-7 text-center text-sm" min="0" max="100" step="0.1" />
