@@ -498,7 +498,7 @@ const BillingSystem: React.FC = () => {
               </Button>
             )}
             <Button onClick={() => { resetBill(); setPrintDialogOpen(false); }} variant="secondary" className="w-full">
-              Create Another Bill
+              {t('createAnotherBill')}
             </Button>
           </div>
         </DialogContent>
