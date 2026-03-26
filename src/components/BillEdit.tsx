@@ -261,7 +261,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
           <div className="flex gap-2">
             <Button onClick={handleUpdateBill} disabled={loading} className="flex-1 h-10">
               <Save className="h-4 w-4 mr-1" />
-              {loading ? 'Updating...' : 'Save Bill'}
+              {loading ? t('updating') : t('saveBill')}
             </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)} className="h-10">
               Cancel
