@@ -490,7 +490,7 @@ const BillingSystem: React.FC = () => {
               <Bluetooth className="h-4 w-4 mr-2" /> {t('printReceipt')}
             </Button>
             <Button onClick={handleDownloadPDF} variant="outline" className="w-full" size="mobile">
-              <Download className="h-4 w-4 mr-2" /> Download PDF
+              <Download className="h-4 w-4 mr-2" /> {t('downloadPDF')}
             </Button>
             {navigator.share && (
               <Button onClick={handleSharePDF} variant="outline" className="w-full" size="mobile">
