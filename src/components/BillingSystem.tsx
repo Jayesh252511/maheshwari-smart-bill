@@ -374,7 +374,7 @@ const BillingSystem: React.FC = () => {
       {billItems.length > 0 && (
         <div className="space-y-2">
           <div className="bg-success/10 text-success px-3 py-2 rounded-lg text-sm font-bold flex items-center justify-between">
-            <span>✓ Billed Items ({billItems.length})</span>
+            <span>✓ {t('billedItems')} ({billItems.length})</span>
           </div>
 
           {billItems.map((item, index) => (
