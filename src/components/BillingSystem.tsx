@@ -411,7 +411,7 @@ const BillingSystem: React.FC = () => {
 
                 {/* Editable Rate */}
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">Rate:</span>
+                  <span className="text-xs text-muted-foreground">{t('rate')}:</span>
                   <Input
                     type="number"
                     value={item.unit_price}
