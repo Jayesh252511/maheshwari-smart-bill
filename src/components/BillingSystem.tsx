@@ -60,7 +60,7 @@ const BillingSystem: React.FC = () => {
         setItems(getCachedItems());
         toast.info(t('loadedCachedData'));
       } else {
-        toast.error('Failed to load data');
+        toast.error(t('failedToLoadData'));
       }
     } finally { setLoading(false); }
   };
