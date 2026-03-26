@@ -162,7 +162,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                 {/* Row 1: Item select + remove */}
                 <div className="flex gap-2 items-start">
                   <div className="flex-1 space-y-1">
-                    <Label className="text-xs font-bold text-foreground">Items</Label>
+                    <Label className="text-xs font-bold text-foreground">{t('items')}</Label>
                     <Select value={billItem.item_id} onValueChange={(v) => updateBillItem(index, 'item_id', v)}>
                       <SelectTrigger className="h-10">
                         <SelectValue placeholder="Select item" />
