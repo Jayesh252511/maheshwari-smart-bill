@@ -142,8 +142,8 @@ const BillingSystem: React.FC = () => {
   };
 
   const saveBill = async (): Promise<Bill | null> => {
-    if (!selectedCustomer) { toast.error('Select a customer'); return null; }
-    if (billItems.length === 0) { toast.error('Add at least one item'); return null; }
+    if (!selectedCustomer) { toast.error(t('selectCustomerError')); return null; }
+    if (billItems.length === 0) { toast.error(t('addAtLeastOneItem')); return null; }
     setSaving(true);
     try {
       const customer = customers.find(c => c.id === selectedCustomer);
