@@ -434,7 +434,7 @@ const BillingSystem: React.FC = () => {
       {billItems.length > 0 && (
         <div className="bg-card rounded-lg border border-border p-3 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Subtotal</span>
+            <span className="text-muted-foreground">{t('subtotal')}</span>
             <span>₹{subtotal.toFixed(2)}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
