@@ -58,7 +58,7 @@ const BillingSystem: React.FC = () => {
       if (!isOnline()) {
         setCustomers(getCachedCustomers());
         setItems(getCachedItems());
-        toast.info('Loaded cached data (offline mode)');
+        toast.info(t('loadedCachedData'));
       } else {
         toast.error('Failed to load data');
       }
