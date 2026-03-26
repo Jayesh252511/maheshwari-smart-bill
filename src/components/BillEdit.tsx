@@ -40,7 +40,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
       const { data, error } = await supabase.from('customers').select('*').eq('user_id', user?.id).order('name');
       if (error) throw error;
       setCustomers(data || []);
-    } catch { toast.error('Failed to load customers'); }
+    } catch { toast.error(t('failedToLoadCustomers')); }
   };
 
   const fetchItems = async () => {
@@ -48,7 +48,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
       const { data, error } = await supabase.from('items').select('*').eq('user_id', user?.id).order('name');
       if (error) throw error;
       setItems(data || []);
-    } catch { toast.error('Failed to load items'); }
+    } catch { toast.error(t('failedToLoadItems')); }
   };
 
   const filteredItems = useMemo(() => {
@@ -97,9 +97,9 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
   };
 
   const handleUpdateBill = async () => {
-    if (!selectedCustomer) { toast.error('Please select a customer'); return; }
+    if (!selectedCustomer) { toast.error(t('pleaseSelectCustomer')); return; }
     if (billItems.length === 0 || billItems.some(item => !item.item_id)) {
-      toast.error('Please add at least one valid item'); return;
+      toast.error(t('pleaseAddValidItem')); return;
     }
     setLoading(true);
     try {
@@ -116,10 +116,10 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
         .insert(billItems.map(item => ({ bill_id: bill.id, item_id: item.item_id, quantity: item.quantity, unit_price: item.unit_price, total_price: item.total_price })));
       if (itemsError) throw itemsError;
 
-      toast.success('Bill updated successfully!');
+      toast.success(t('billUpdated'));
       onOpenChange(false);
       onBillUpdated();
-    } catch { toast.error('Failed to update bill'); } finally { setLoading(false); }
+    } catch { toast.error(t('failedToUpdateBill')); } finally { setLoading(false); }
   };
 
   const { subtotal, total_amount } = calculateTotals();
@@ -128,17 +128,17 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4">
         <DialogHeader className="pb-2">
-          <DialogTitle className="text-base font-bold">Edit Bills - {bill.bill_number}</DialogTitle>
-          <DialogDescription className="text-xs">Update bill details and items</DialogDescription>
+          <DialogTitle>{t('editBills')} - {bill.bill_number}</DialogTitle>
+          <DialogDescription className="text-xs">{t('updateBillDetails')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           {/* Customer */}
           <div>
-            <Label className="text-xs font-medium text-muted-foreground">Customers</Label>
+            <Label className="text-xs font-medium text-muted-foreground">{t('customers')}</Label>
             <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
               <SelectTrigger className="h-11 mt-1">
-                <SelectValue placeholder="Select customer" />
+                <SelectValue placeholder={t('selectCustomer')} />
               </SelectTrigger>
               <SelectContent>
                 {customers.map(c => (
@@ -151,9 +151,9 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
           {/* Items */}
           <div className="bg-card rounded-lg border border-border p-3 space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-sm text-foreground">Items</h3>
+              <h3 className="font-bold text-sm text-foreground">{t('items')}</h3>
               <Button onClick={addItem} variant="outline" size="sm" className="h-8 text-xs">
-                <Plus className="h-3 w-3 mr-1" /> Add Items
+                <Plus className="h-3 w-3 mr-1" /> {t('addItems')}
               </Button>
             </div>
 
@@ -162,17 +162,17 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                 {/* Row 1: Item select + remove */}
                 <div className="flex gap-2 items-start">
                   <div className="flex-1 space-y-1">
-                    <Label className="text-xs font-bold text-foreground">Items</Label>
+                    <Label className="text-xs font-bold text-foreground">{t('items')}</Label>
                     <Select value={billItem.item_id} onValueChange={(v) => updateBillItem(index, 'item_id', v)}>
                       <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Select item" />
+                        <SelectValue placeholder={t('selectItem')} />
                       </SelectTrigger>
                       <SelectContent>
                         <div className="p-2">
                           <div className="relative mb-2">
                             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                             <Input
-                              placeholder="Search..."
+                              placeholder={t('search')}
                               value={itemSearch}
                               onChange={(e) => setItemSearch(e.target.value)}
                               className="h-8 pl-7 text-xs"
@@ -199,7 +199,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                 {/* Row 2: Quantity, Unit, Price, Total */}
                 <div className="grid grid-cols-4 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-foreground">Quantity</Label>
+                    <Label className="text-xs font-bold text-foreground">{t('quantity')}</Label>
                     <div className="flex items-center gap-1">
                       <Button variant="outline" size="icon" className="h-8 w-8 flex-shrink-0"
                         onClick={() => updateBillItem(index, 'quantity', billItem.quantity - 1)}
@@ -218,11 +218,11 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-foreground">Unit</Label>
+                    <Label className="text-xs font-bold text-foreground">{t('unit')}</Label>
                     <Input value={billItem.unit} disabled className="h-8 text-sm" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-foreground">Price</Label>
+                    <Label className="text-xs font-bold text-foreground">{t('price')}</Label>
                     <Input
                       type="number" value={billItem.unit_price}
                       onChange={(e) => updateBillItem(index, 'unit_price', e.target.value)}
@@ -230,7 +230,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-foreground">Total</Label>
+                    <Label className="text-xs font-bold text-foreground">{t('total')}</Label>
                     <Input value={billItem.total_price.toFixed(0)} disabled className="h-8 text-sm font-bold" />
                   </div>
                 </div>
@@ -238,21 +238,21 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
             ))}
 
             {billItems.length === 0 && (
-              <p className="text-center py-6 text-sm text-muted-foreground">No items added yet.</p>
+              <p className="text-center py-6 text-sm text-muted-foreground">{t('noItemsAddedYet')}</p>
             )}
           </div>
 
           {/* Summary */}
           <div className="bg-card rounded-lg border border-border p-3 space-y-1">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Items: {billItems.length}</span>
+              <span className="text-muted-foreground">{t('items')}: {billItems.length}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal:</span>
+              <span className="text-muted-foreground">{t('subtotal')}:</span>
               <span>₹{subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold text-base border-t pt-2">
-              <span>Total:</span>
+              <span>{t('total')}:</span>
               <span>₹{total_amount.toFixed(2)}</span>
             </div>
           </div>
@@ -261,10 +261,10 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
           <div className="flex gap-2">
             <Button onClick={handleUpdateBill} disabled={loading} className="flex-1 h-10">
               <Save className="h-4 w-4 mr-1" />
-              {loading ? 'Updating...' : 'Save Bill'}
+              {loading ? t('updating') : t('saveBill')}
             </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)} className="h-10">
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         </div>

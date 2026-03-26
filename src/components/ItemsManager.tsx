@@ -8,6 +8,7 @@ import { Plus, Edit, Trash2, Package, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useLocalization } from '@/contexts/LocalizationContext';
 
 interface Item {
   id: string;
@@ -25,6 +26,7 @@ const ItemsManager: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({ name: '', price: '', unit: 'patti' });
   const { user } = useAuth();
+  const { t } = useLocalization();
 
   useEffect(() => { if (user) fetchItems(); }, [user]);
 
@@ -33,7 +35,7 @@ const ItemsManager: React.FC = () => {
       const { data, error } = await supabase.from('items').select('*').eq('user_id', user?.id).order('name');
       if (error) throw error;
       setItems(data || []);
-    } catch { toast.error('Failed to load items'); } finally { setLoading(false); }
+    } catch { toast.error(t('failedToLoadItems')); } finally { setLoading(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,15 +45,15 @@ const ItemsManager: React.FC = () => {
       if (editingItem) {
         const { error } = await supabase.from('items').update(itemData).eq('id', editingItem.id);
         if (error) throw error;
-        toast.success('Item updated');
+        toast.success(t('itemUpdated'));
       } else {
         const { error } = await supabase.from('items').insert([itemData]);
         if (error) throw error;
-        toast.success('Item added');
+        toast.success(t('itemAdded'));
       }
       setDialogOpen(false); setEditingItem(null);
       setFormData({ name: '', price: '', unit: 'patti' }); fetchItems();
-    } catch { toast.error('Failed to save item'); }
+    } catch { toast.error(t('failedToSaveItem')); }
   };
 
   const handleEdit = (item: Item) => {
@@ -61,12 +63,12 @@ const ItemsManager: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this item?')) return;
+    if (!confirm(t('deleteThisItem'))) return;
     try {
       const { error } = await supabase.from('items').delete().eq('id', id);
       if (error) throw error;
-      toast.success('Item deleted'); fetchItems();
-    } catch { toast.error('Failed to delete item'); }
+      toast.success(t('itemDeleted')); fetchItems();
+    } catch { toast.error(t('failedToDeleteItem')); }
   };
 
   const filteredItems = items.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -80,18 +82,18 @@ const ItemsManager: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-foreground">Items</h2>
-          <p className="text-xs text-muted-foreground">{items.length} items</p>
+          <h2 className="text-lg font-bold text-foreground">{t('items')}</h2>
+          <p className="text-xs text-muted-foreground">{items.length} {t('nItems')}</p>
         </div>
         <Button onClick={() => { setEditingItem(null); setFormData({ name: '', price: '', unit: 'patti' }); setDialogOpen(true); }} size="sm">
-          <Plus className="h-4 w-4 mr-1" /> Add Item
+          <Plus className="h-4 w-4 mr-1" /> {t('addItem')}
         </Button>
       </div>
 
       {/* Search */}
       <div className="section-card flex items-center gap-3 px-4 py-3">
         <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-        <Input placeholder="Search items..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+        <Input placeholder={t('searchItems')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
           className="border-0 shadow-none focus-visible:ring-0 px-0 h-auto py-0 text-sm" />
       </div>
 
@@ -99,10 +101,10 @@ const ItemsManager: React.FC = () => {
       {filteredItems.length === 0 ? (
         <div className="section-card flex flex-col items-center justify-center py-12">
           <Package className="h-10 w-10 text-muted-foreground mb-3" />
-          <p className="text-sm font-medium text-foreground mb-1">No items</p>
-          <p className="text-xs text-muted-foreground mb-3">Add your first item</p>
+          <p className="text-sm font-medium text-foreground mb-1">{t('noItems')}</p>
+          <p className="text-xs text-muted-foreground mb-3">{t('addYourFirstItem')}</p>
           <Button onClick={() => setDialogOpen(true)} size="sm">
-            <Plus className="h-4 w-4 mr-1" /> Add Item
+            <Plus className="h-4 w-4 mr-1" /> {t('addItem')}
           </Button>
         </div>
       ) : (
@@ -130,31 +132,31 @@ const ItemsManager: React.FC = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingItem ? 'Edit Item' : 'Add New Item'}</DialogTitle>
-            <DialogDescription>{editingItem ? 'Update item details.' : 'Enter item details.'}</DialogDescription>
+            <DialogTitle>{editingItem ? t('editItem') : t('addNewItem')}</DialogTitle>
+            <DialogDescription>{editingItem ? t('updateItemDetails') : t('enterItemDetails')}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Item Name</Label>
-              <Input value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} placeholder="Enter item name" required />
+              <Label>{t('itemName')}</Label>
+              <Input value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} placeholder={t('enterItemName')} required />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Rate (Price/Unit)</Label>
+                <Label>{t('ratePerUnit')}</Label>
                 <Input type="number" step="0.01" value={formData.price} onChange={(e) => setFormData(p => ({ ...p, price: e.target.value }))} placeholder="0.00" required />
               </div>
               <div className="space-y-2">
-                <Label>Unit</Label>
+                <Label>{t('unit')}</Label>
                 <select value={formData.unit} onChange={(e) => setFormData(p => ({ ...p, unit: e.target.value }))}
                   className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                  <option value="patti">Patti</option>
-                  <option value="box">Box</option>
+                  <option value="patti">{t('patti')}</option>
+                  <option value="box">{t('box')}</option>
                 </select>
               </div>
             </div>
             <div className="flex gap-2">
-              <Button type="submit" className="flex-1">{editingItem ? 'Update' : 'Add Item'}</Button>
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" className="flex-1">{editingItem ? t('update') : t('addItem')}</Button>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t('cancel')}</Button>
             </div>
           </form>
         </DialogContent>
