@@ -287,7 +287,7 @@ const BillingSystem: React.FC = () => {
         <Label className="text-xs font-medium text-muted-foreground">{t('customer')} *</Label>
         <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
           <SelectTrigger className="h-11">
-            <SelectValue placeholder="Select a customer" />
+            <SelectValue placeholder={t('selectACustomer')} />
           </SelectTrigger>
           <SelectContent>
             {customers.map(c => (
