@@ -269,7 +269,7 @@ const BillingSystem: React.FC = () => {
             {online ? t('online') : t('offline')}
             {pendingCount > 0 && (
               <span className="ml-1 bg-warning/20 text-warning px-1.5 py-0.5 rounded-full text-[10px] font-bold">
-                {pendingCount} pending
+                {pendingCount} {t('pending')}
               </span>
             )}
           </div>
