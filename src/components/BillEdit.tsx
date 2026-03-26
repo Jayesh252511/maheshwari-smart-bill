@@ -97,9 +97,9 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
   };
 
   const handleUpdateBill = async () => {
-    if (!selectedCustomer) { toast.error('Please select a customer'); return; }
+    if (!selectedCustomer) { toast.error(t('pleaseSelectCustomer')); return; }
     if (billItems.length === 0 || billItems.some(item => !item.item_id)) {
-      toast.error('Please add at least one valid item'); return;
+      toast.error(t('pleaseAddValidItem')); return;
     }
     setLoading(true);
     try {
