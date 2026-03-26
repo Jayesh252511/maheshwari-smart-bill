@@ -304,7 +304,7 @@ const BillingSystem: React.FC = () => {
 
       {/* Add Items Section */}
       <div className="bg-card rounded-lg border border-border p-3 space-y-3">
-        <h3 className="font-bold text-foreground text-sm">Add Items</h3>
+        <h3 className="font-bold text-foreground text-sm">{t('addItems')}</h3>
 
         {/* Search with autocomplete */}
         <div ref={searchRef} className="relative">
