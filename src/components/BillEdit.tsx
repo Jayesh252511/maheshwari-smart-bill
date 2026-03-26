@@ -151,7 +151,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
           {/* Items */}
           <div className="bg-card rounded-lg border border-border p-3 space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-sm text-foreground">Items</h3>
+              <h3 className="font-bold text-sm text-foreground">{t('items')}</h3>
               <Button onClick={addItem} variant="outline" size="sm" className="h-8 text-xs">
                 <Plus className="h-3 w-3 mr-1" /> Add Items
               </Button>
