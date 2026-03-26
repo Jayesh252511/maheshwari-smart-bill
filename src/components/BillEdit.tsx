@@ -48,7 +48,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
       const { data, error } = await supabase.from('items').select('*').eq('user_id', user?.id).order('name');
       if (error) throw error;
       setItems(data || []);
-    } catch { toast.error('Failed to load items'); }
+    } catch { toast.error(t('failedToLoadItems')); }
   };
 
   const filteredItems = useMemo(() => {
