@@ -245,7 +245,7 @@ const BillingSystem: React.FC = () => {
 
   const handleVoiceSelectCustomer = useCallback((customerName: string) => {
     const match = customers.find(c => c.name.toLowerCase().includes(customerName.toLowerCase()) || customerName.toLowerCase().includes(c.name.toLowerCase()));
-    if (match) { setSelectedCustomer(match.id); toast.success(`Selected: ${match.name}`); }
+    if (match) { setSelectedCustomer(match.id); toast.success(`${t('selected')}: ${match.name}`); }
   }, [customers]);
 
   const { subtotal, taxAmount, total } = calculateTotals();
