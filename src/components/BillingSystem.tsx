@@ -163,7 +163,7 @@ const BillingSystem: React.FC = () => {
           items: billItems.map(i => ({ item_id: i.item_id, item_name: i.item_name, quantity: i.quantity, unit_price: i.unit_price, total_price: i.total_price, unit: i.unit }))
         });
         refreshPendingCount();
-        toast.success('Bill saved offline! Will sync when back online.');
+        toast.success(t('billSavedOffline'));
         return offlineBill;
       }
 
