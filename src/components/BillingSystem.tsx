@@ -266,7 +266,7 @@ const BillingSystem: React.FC = () => {
             online ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
           }`}>
             <span className={`h-2 w-2 rounded-full ${online ? 'bg-success' : 'bg-warning animate-pulse'}`} />
-            {online ? 'Online' : 'Offline'}
+            {online ? t('online') : t('offline')}
             {pendingCount > 0 && (
               <span className="ml-1 bg-warning/20 text-warning px-1.5 py-0.5 rounded-full text-[10px] font-bold">
                 {pendingCount} pending
