@@ -203,8 +203,8 @@ const BillingSystem: React.FC = () => {
 
   const handleDownloadPDF = async () => {
     if (!currentBill) return;
-    try { await downloadPDF(currentBill, { name: 'Maheshwari Agency', address: 'matakari galli shegaon', phone: '7020709696' }, undefined, t); toast.success('PDF downloaded!'); }
-    catch { toast.error('Failed to generate PDF'); }
+    try { await downloadPDF(currentBill, { name: 'Maheshwari Agency', address: 'matakari galli shegaon', phone: '7020709696' }, undefined, t); toast.success(t('pdfDownloaded')); }
+    catch { toast.error(t('failedToGeneratePDF')); }
   };
 
   const handleSharePDF = async () => {
