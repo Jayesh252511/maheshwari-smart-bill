@@ -222,7 +222,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                     <Input value={billItem.unit} disabled className="h-8 text-sm" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-foreground">Price</Label>
+                    <Label className="text-xs font-bold text-foreground">{t('price')}</Label>
                     <Input
                       type="number" value={billItem.unit_price}
                       onChange={(e) => updateBillItem(index, 'unit_price', e.target.value)}
