@@ -11,11 +11,13 @@ import Reports from '@/components/Reports';
 import AICustomerSupport from '@/components/AICustomerSupport';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useLocalization } from '@/contexts/LocalizationContext';
 
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const { t } = useLocalization();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -28,7 +30,7 @@ const Index = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -60,19 +62,18 @@ const Index = () => {
   const getPageTitle = () => {
     switch (currentPage) {
       case 'items':
-        return 'Items Management';
+        return t('itemsManagement');
       case 'customers':
-        return 'Customer Management';
+        return t('customerManagement');
       case 'billing':
-        return 'Create Bill';
+        return t('createBill');
       case 'bills':
-        return 'Bills & Reports';
+        return t('billsAndReports');
       default:
-        return 'MAHESHWARI AGENCIES';
+        return t('maheshwariAgencies');
     }
   };
 
-  // Pages that show back button (not in bottom nav)
   const showBackButton = ['billing', 'reports', 'ai-support'].includes(currentPage);
 
   return (
@@ -85,7 +86,7 @@ const Index = () => {
             className="flex items-center gap-2 text-sm -ml-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {t('back')}
           </Button>
         </div>
       )}
