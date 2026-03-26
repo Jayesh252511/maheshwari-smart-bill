@@ -397,7 +397,7 @@ const BillingSystem: React.FC = () => {
               <div className="flex items-center gap-3 flex-wrap">
                 {/* Quantity controls */}
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground mr-1">Qty:</span>
+                  <span className="text-xs text-muted-foreground mr-1">{t('qty')}:</span>
                   <Button variant="outline" size="icon" className="h-7 w-7"
                     onClick={() => updateItemQuantity(item.item_id, item.quantity - 1)}>
                     <Minus className="h-3 w-3" />
