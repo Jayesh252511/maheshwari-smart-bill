@@ -135,7 +135,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
         <div className="space-y-3">
           {/* Customer */}
           <div>
-            <Label className="text-xs font-medium text-muted-foreground">Customers</Label>
+            <Label className="text-xs font-medium text-muted-foreground">{t('customers')}</Label>
             <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
               <SelectTrigger className="h-11 mt-1">
                 <SelectValue placeholder="Select customer" />
