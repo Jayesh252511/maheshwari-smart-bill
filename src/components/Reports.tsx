@@ -9,7 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Bill } from '@/types/bill';
-import { useLocalization } from '@/contexts/LocalizationContext';
 
 interface ReportData {
   totalRevenue: number;
@@ -27,11 +26,12 @@ const Reports: React.FC = () => {
   const [dateTo, setDateTo] = useState('');
   const [reportType, setReportType] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('daily');
   const { user } = useAuth();
-  const { t } = useLocalization();
 
   useEffect(() => {
+    // Set default date range (last 30 days)
     const today = new Date();
     const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    
     setDateTo(today.toISOString().split('T')[0]);
     setDateFrom(thirtyDaysAgo.toISOString().split('T')[0]);
   }, []);
@@ -44,15 +44,23 @@ const Reports: React.FC = () => {
 
   const generateReport = async () => {
     if (!dateFrom || !dateTo) {
-      toast.error(t('pleasSelectDateRange'));
+      toast.error('Please select date range');
       return;
     }
 
     setLoading(true);
     try {
+      // Fetch bills with customer and item details
       const { data: billsData, error } = await supabase
         .from('bills')
-        .select(`*, customers (name, phone), bill_items (*, items (name, unit))`)
+        .select(`
+          *,
+          customers (name, phone),
+          bill_items (
+            *,
+            items (name, unit)
+          )
+        `)
         .eq('user_id', user?.id)
         .gte('created_at', dateFrom + 'T00:00:00.000Z')
         .lte('created_at', dateTo + 'T23:59:59.999Z')
@@ -67,19 +75,28 @@ const Reports: React.FC = () => {
         customer_name: bill.customers?.name || 'Unknown Customer',
         customer_phone: bill.customers?.phone,
         items: bill.bill_items?.map((bi: any) => ({
-          id: bi.id, item_id: bi.item_id, item_name: bi.items?.name || 'Unknown Item',
-          quantity: bi.quantity, unit_price: Number(bi.unit_price),
-          total_price: Number(bi.total_price), unit: bi.items?.unit || 'patti'
+          id: bi.id,
+          item_id: bi.item_id,
+          item_name: bi.items?.name || 'Unknown Item',
+          quantity: bi.quantity,
+          unit_price: Number(bi.unit_price),
+          total_price: Number(bi.total_price),
+          unit: bi.items?.unit || 'patti'
         })) || [],
-        subtotal: Number(bill.subtotal), tax_amount: Number(bill.tax_amount),
-        total_amount: Number(bill.total_amount), status: bill.status, created_at: bill.created_at
+        subtotal: Number(bill.subtotal),
+        tax_amount: Number(bill.tax_amount),
+        total_amount: Number(bill.total_amount),
+        status: bill.status,
+        created_at: bill.created_at
       })) || [];
 
+      // Calculate report metrics
       const totalRevenue = bills.reduce((sum, bill) => sum + bill.total_amount, 0);
       const totalBills = bills.length;
       const totalItems = bills.reduce((sum, bill) => sum + bill.items.length, 0);
       const averageBillValue = totalBills > 0 ? totalRevenue / totalBills : 0;
 
+      // Top customers
       const customerMap = new Map();
       bills.forEach(bill => {
         const existing = customerMap.get(bill.customer_name) || { name: bill.customer_name, totalAmount: 0, billCount: 0 };
@@ -87,14 +104,25 @@ const Reports: React.FC = () => {
         existing.billCount += 1;
         customerMap.set(bill.customer_name, existing);
       });
-      const topCustomers = Array.from(customerMap.values()).sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 5);
+      const topCustomers = Array.from(customerMap.values())
+        .sort((a, b) => b.totalAmount - a.totalAmount)
+        .slice(0, 5);
 
+      // Revenue by period
       const revenueByPeriod = generatePeriodData(bills, reportType);
 
-      setReportData({ totalRevenue, totalBills, totalItems, averageBillValue, topCustomers, revenueByPeriod });
+      setReportData({
+        totalRevenue,
+        totalBills,
+        totalItems,
+        averageBillValue,
+        topCustomers,
+        revenueByPeriod
+      });
+
     } catch (error) {
       console.error('Error generating report:', error);
-      toast.error(t('failedToGenerateReport'));
+      toast.error('Failed to generate report');
     } finally {
       setLoading(false);
     }
@@ -102,40 +130,43 @@ const Reports: React.FC = () => {
 
   const generatePeriodData = (bills: Bill[], type: string) => {
     const periodMap = new Map();
+    
     bills.forEach(bill => {
       const date = new Date(bill.created_at);
       let period = '';
+      
       switch (type) {
-        case 'daily': period = date.toLocaleDateString(); break;
+        case 'daily':
+          period = date.toLocaleDateString();
+          break;
         case 'weekly':
           const weekStart = new Date(date);
           weekStart.setDate(date.getDate() - date.getDay());
-          period = `${t('weekOf')} ${weekStart.toLocaleDateString()}`; break;
-        case 'monthly': period = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; break;
-        case 'yearly': period = date.getFullYear().toString(); break;
+          period = `Week of ${weekStart.toLocaleDateString()}`;
+          break;
+        case 'monthly':
+          period = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          break;
+        case 'yearly':
+          period = date.getFullYear().toString();
+          break;
       }
+      
       const existing = periodMap.get(period) || { period, revenue: 0, bills: 0 };
       existing.revenue += bill.total_amount;
       existing.bills += 1;
       periodMap.set(period, existing);
     });
+    
     return Array.from(periodMap.values()).sort((a, b) => a.period.localeCompare(b.period));
   };
 
   const handleQuickDateRange = (days: number) => {
     const today = new Date();
     const startDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
+    
     setDateTo(today.toISOString().split('T')[0]);
     setDateFrom(startDate.toISOString().split('T')[0]);
-  };
-
-  const getReportTypeLabel = () => {
-    switch (reportType) {
-      case 'daily': return t('daily');
-      case 'weekly': return t('weekly');
-      case 'monthly': return t('monthly');
-      case 'yearly': return t('yearly');
-    }
   };
 
   if (loading) {
@@ -157,45 +188,63 @@ const Reports: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-semibold text-foreground">{t('reportsAndAnalytics')}</h2>
-        <p className="text-sm text-muted-foreground">{t('viewBusinessPerformance')}</p>
+        <h2 className="text-xl font-semibold text-foreground">Reports & Analytics</h2>
+        <p className="text-sm text-muted-foreground">View your business performance</p>
       </div>
 
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{t('reportFilters')}</CardTitle>
+          <CardTitle className="text-lg">Report Filters</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t('fromDate')}</Label>
-              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+              <Label>From Date</Label>
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
-              <Label>{t('toDate')}</Label>
-              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+              <Label>To Date</Label>
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+              />
             </div>
           </div>
-
+          
           <div className="space-y-2">
-            <Label>{t('reportType')}</Label>
+            <Label>Report Type</Label>
             <Select value={reportType} onValueChange={(value: any) => setReportType(value)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                <SelectItem value="daily">{t('daily')}</SelectItem>
-                <SelectItem value="weekly">{t('weekly')}</SelectItem>
-                <SelectItem value="monthly">{t('monthly')}</SelectItem>
-                <SelectItem value="yearly">{t('yearly')}</SelectItem>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="yearly">Yearly</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => handleQuickDateRange(7)}>{t('last7days')}</Button>
-            <Button variant="outline" size="sm" onClick={() => handleQuickDateRange(30)}>{t('last30days')}</Button>
-            <Button variant="outline" size="sm" onClick={() => handleQuickDateRange(90)}>{t('last3months')}</Button>
-            <Button onClick={generateReport}>{t('generateReport')}</Button>
+            <Button variant="outline" size="sm" onClick={() => handleQuickDateRange(7)}>
+              Last 7 days
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => handleQuickDateRange(30)}>
+              Last 30 days
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => handleQuickDateRange(90)}>
+              Last 3 months
+            </Button>
+            <Button onClick={generateReport}>
+              Generate Report
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -203,46 +252,50 @@ const Reports: React.FC = () => {
       {/* Report Data */}
       {reportData && (
         <>
+          {/* Summary Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <DollarSign className="h-5 w-5 text-success" />
                   <div>
-                    <p className="text-sm text-muted-foreground">{t('totalRevenue')}</p>
+                    <p className="text-sm text-muted-foreground">Total Revenue</p>
                     <p className="text-lg font-semibold">{reportData.totalRevenue.toFixed(2)}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <Receipt className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-sm text-muted-foreground">{t('totalBills')}</p>
+                    <p className="text-sm text-muted-foreground">Total Bills</p>
                     <p className="text-lg font-semibold">{reportData.totalBills}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <Package className="h-5 w-5 text-accent" />
                   <div>
-                    <p className="text-sm text-muted-foreground">{t('totalItems')}</p>
+                    <p className="text-sm text-muted-foreground">Total Items</p>
                     <p className="text-lg font-semibold">{reportData.totalItems}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <TrendingUp className="h-5 w-5 text-warning" />
                   <div>
-                    <p className="text-sm text-muted-foreground">{t('avgBillValue')}</p>
+                    <p className="text-sm text-muted-foreground">Avg Bill Value</p>
                     <p className="text-lg font-semibold">{reportData.averageBillValue.toFixed(2)}</p>
                   </div>
                 </div>
@@ -250,45 +303,47 @@ const Reports: React.FC = () => {
             </Card>
           </div>
 
+          {/* Top Customers */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">{t('topCustomers')}</CardTitle>
+              <CardTitle className="text-lg">Top Customers</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {reportData.topCustomers.map((customer) => (
+                {reportData.topCustomers.map((customer, index) => (
                   <div key={customer.name} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>
                       <p className="font-medium">{customer.name}</p>
-                      <p className="text-sm text-muted-foreground">{customer.billCount} {t('nBills')}</p>
+                      <p className="text-sm text-muted-foreground">{customer.billCount} bills</p>
                     </div>
                     <p className="font-semibold">{customer.totalAmount.toFixed(2)}</p>
                   </div>
                 ))}
                 {reportData.topCustomers.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">{t('noCustomerData')}</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">No customer data available</p>
                 )}
               </div>
             </CardContent>
           </Card>
 
+          {/* Revenue by Period */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">{t('revenueBy')} {getReportTypeLabel()}</CardTitle>
+              <CardTitle className="text-lg">Revenue by {reportType.charAt(0).toUpperCase() + reportType.slice(1)}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {reportData.revenueByPeriod.map((period) => (
+                {reportData.revenueByPeriod.map((period, index) => (
                   <div key={period.period} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>
                       <p className="font-medium">{period.period}</p>
-                      <p className="text-sm text-muted-foreground">{period.bills} {t('nBills')}</p>
+                      <p className="text-sm text-muted-foreground">{period.bills} bills</p>
                     </div>
                     <p className="font-semibold">{period.revenue.toFixed(2)}</p>
                   </div>
                 ))}
                 {reportData.revenueByPeriod.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">{t('noDataForPeriod')}</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">No data available for selected period</p>
                 )}
               </div>
             </CardContent>

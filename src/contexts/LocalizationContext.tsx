@@ -11,261 +11,45 @@ interface Translations {
 }
 
 const translations: Translations = {
-  // ── Common Actions ──
+  // Common
   add: { en: 'Add', hi: 'जोड़ें', mr: 'जोडा' },
   edit: { en: 'Edit', hi: 'संपादित करें', mr: 'संपादित करा' },
   delete: { en: 'Delete', hi: 'हटाएं', mr: 'हटवा' },
   cancel: { en: 'Cancel', hi: 'रद्द करें', mr: 'रद्द करा' },
   save: { en: 'Save', hi: 'सहेजें', mr: 'सेव्ह करा' },
-  update: { en: 'Update', hi: 'अपडेट करें', mr: 'अपडेट करा' },
-  clear: { en: 'Clear', hi: 'साफ़ करें', mr: 'साफ करा' },
-  close: { en: 'Close', hi: 'बंद करें', mr: 'बंद करा' },
-  back: { en: 'Back', hi: 'वापस', mr: 'मागे' },
-  search: { en: 'Search', hi: 'खोजें', mr: 'शोधा' },
-  loading: { en: 'Loading...', hi: 'लोड हो रहा है...', mr: 'लोड होत आहे...' },
-  yes: { en: 'Yes', hi: 'हाँ', mr: 'हो' },
-  no: { en: 'No', hi: 'नहीं', mr: 'नाही' },
-  ok: { en: 'OK', hi: 'ठीक है', mr: 'ठीक आहे' },
-  confirm: { en: 'Confirm', hi: 'पुष्टि करें', mr: 'पुष्टी करा' },
-  required: { en: 'Required', hi: 'आवश्यक', mr: 'आवश्यक' },
-
-  // ── Common Labels ──
   name: { en: 'Name', hi: 'नाम', mr: 'नाव' },
   quantity: { en: 'Quantity', hi: 'मात्रा', mr: 'प्रमाण' },
   amount: { en: 'Amount', hi: 'राशि', mr: 'रक्कम' },
   date: { en: 'Date', hi: 'दिनांक', mr: 'दिनांक' },
-  status: { en: 'Status', hi: 'स्थिति', mr: 'स्थिती' },
-  total: { en: 'Total', hi: 'कुल', mr: 'एकूण' },
-  subtotal: { en: 'Subtotal', hi: 'उप योग', mr: 'उप बेरीज' },
-  rate: { en: 'Rate', hi: 'दर', mr: 'दर' },
-  sale: { en: 'SALE', hi: 'बिक्री', mr: 'विक्री' },
-  balance: { en: 'Balance', hi: 'शेष', mr: 'शिल्लक' },
-
-  // ── Items ──
+  
+  // Items
   items: { en: 'Items', hi: 'वस्तुएं', mr: 'वस्तू' },
   itemName: { en: 'Item Name', hi: 'वस्तु का नाम', mr: 'वस्तूचे नाव' },
   price: { en: 'Price', hi: 'मूल्य', mr: 'किंमत' },
   priceUnit: { en: 'Price/Unit', hi: 'मूल्य/इकाई', mr: 'किंमत/युनिट' },
-  ratePerUnit: { en: 'Rate (Price/Unit)', hi: 'दर (मूल्य/इकाई)', mr: 'दर (किंमत/युनिट)' },
   unit: { en: 'Unit', hi: 'इकाई', mr: 'युनिट' },
-  addItem: { en: 'Add Item', hi: 'वस्तू जोड़ें', mr: 'वस्तू जोडा' },
-  editItem: { en: 'Edit Item', hi: 'वस्तू संपादित करें', mr: 'वस्तू संपादित करा' },
-  addNewItem: { en: 'Add New Item', hi: 'नई वस्तू जोड़ें', mr: 'नवीन वस्तू जोडा' },
-  noItems: { en: 'No items', hi: 'कोई वस्तू नहीं', mr: 'कोणतीही वस्तू नाही' },
-  addYourFirstItem: { en: 'Add your first item', hi: 'अपनी पहली वस्तू जोड़ें', mr: 'आपली पहिली वस्तू जोडा' },
-  searchItems: { en: 'Search items...', hi: 'वस्तू खोजें...', mr: 'वस्तू शोधा...' },
-  enterItemName: { en: 'Enter item name', hi: 'वस्तू का नाम दर्ज करें', mr: 'वस्तूचे नाव प्रविष्ट करा' },
-  itemUpdated: { en: 'Item updated', hi: 'वस्तू अपडेट हुई', mr: 'वस्तू अपडेट झाली' },
-  itemAdded: { en: 'Item added', hi: 'वस्तू जोड़ी गई', mr: 'वस्तू जोडली' },
-  itemDeleted: { en: 'Item deleted', hi: 'वस्तू हटाई गई', mr: 'वस्तू हटवली' },
-  failedToSaveItem: { en: 'Failed to save item', hi: 'वस्तू सहेजने में विफल', mr: 'वस्तू सेव्ह करण्यात अयशस्वी' },
-  failedToLoadItems: { en: 'Failed to load items', hi: 'वस्तुएं लोड करने में विफल', mr: 'वस्तू लोड करण्यात अयशस्वी' },
-  failedToDeleteItem: { en: 'Failed to delete item', hi: 'वस्तू हटाने में विफल', mr: 'वस्तू हटवण्यात अयशस्वी' },
-  deleteThisItem: { en: 'Delete this item?', hi: 'क्या इस वस्तू को हटाना है?', mr: 'ही वस्तू हटवायची का?' },
-  updateItemDetails: { en: 'Update item details.', hi: 'वस्तू का विवरण अपडेट करें।', mr: 'वस्तूचे तपशील अपडेट करा.' },
-  enterItemDetails: { en: 'Enter item details.', hi: 'वस्तू का विवरण दर्ज करें।', mr: 'वस्तूचे तपशील प्रविष्ट करा.' },
-  noItemsFound: { en: 'No items found', hi: 'कोई वस्तू नहीं मिली', mr: 'कोणतीही वस्तू सापडली नाही' },
-  nItems: { en: 'items', hi: 'वस्तुएं', mr: 'वस्तू' },
-  selectAnItem: { en: 'Select an item', hi: 'एक वस्तू चुनें', mr: 'एक वस्तू निवडा' },
-
-  // ── Units ──
-  patti: { en: 'Patti', hi: 'पत्ती', mr: 'पट्टी' },
-  box: { en: 'Box', hi: 'डिब्बा', mr: 'बॉक्स' },
-
-  // ── Customers ──
+  
+  // Customers
   customers: { en: 'Customers', hi: 'ग्राहक', mr: 'ग्राहक' },
   customer: { en: 'Customer', hi: 'ग्राहक', mr: 'ग्राहक' },
   customerName: { en: 'Customer Name', hi: 'ग्राहक का नाम', mr: 'ग्राहकाचे नाव' },
   phone: { en: 'Phone', hi: 'फोन', mr: 'फोन' },
-  phoneNumber: { en: 'Phone Number', hi: 'फोन नंबर', mr: 'फोन नंबर' },
   address: { en: 'Address', hi: 'पता', mr: 'पत्ता' },
-  addCustomer: { en: 'Add Customer', hi: 'ग्राहक जोड़ें', mr: 'ग्राहक जोडा' },
-  editCustomer: { en: 'Edit Customer', hi: 'ग्राहक संपादित करें', mr: 'ग्राहक संपादित करा' },
-  noCustomers: { en: 'No customers', hi: 'कोई ग्राहक नहीं', mr: 'कोणताही ग्राहक नाही' },
-  addYourFirstCustomer: { en: 'Add your first customer', hi: 'अपना पहला ग्राहक जोड़ें', mr: 'आपला पहिला ग्राहक जोडा' },
-  searchCustomers: { en: 'Search customers...', hi: 'ग्राहक खोजें...', mr: 'ग्राहक शोधा...' },
-  customerUpdated: { en: 'Customer updated', hi: 'ग्राहक अपडेट हुआ', mr: 'ग्राहक अपडेट झाला' },
-  customerAdded: { en: 'Customer added', hi: 'ग्राहक जोड़ा गया', mr: 'ग्राहक जोडला' },
-  customerDeleted: { en: 'Customer deleted', hi: 'ग्राहक हटाया गया', mr: 'ग्राहक हटवला' },
-  failedToSaveCustomer: { en: 'Failed to save customer', hi: 'ग्राहक सहेजने में विफल', mr: 'ग्राहक सेव्ह करण्यात अयशस्वी' },
-  failedToLoadCustomers: { en: 'Failed to load customers', hi: 'ग्राहक लोड करने में विफल', mr: 'ग्राहक लोड करण्यात अयशस्वी' },
-  failedToDeleteCustomer: { en: 'Failed to delete customer', hi: 'ग्राहक हटाने में विफल', mr: 'ग्राहक हटवण्यात अयशस्वी' },
-  deleteThisCustomer: { en: 'Delete this customer?', hi: 'क्या इस ग्राहक को हटाना है?', mr: 'हा ग्राहक हटवायचा का?' },
-  updateDetails: { en: 'Update details.', hi: 'विवरण अपडेट करें।', mr: 'तपशील अपडेट करा.' },
-  enterDetails: { en: 'Enter details.', hi: 'विवरण दर्ज करें।', mr: 'तपशील प्रविष्ट करा.' },
-  selectACustomer: { en: 'Select a customer', hi: 'एक ग्राहक चुनें', mr: 'एक ग्राहक निवडा' },
-  viewAllCustomers: { en: 'View All Customers', hi: 'सभी ग्राहक देखें', mr: 'सर्व ग्राहक पहा' },
-  nCustomers: { en: 'customers', hi: 'ग्राहक', mr: 'ग्राहक' },
-  enterCustomerName: { en: 'Customer name', hi: 'ग्राहक का नाम', mr: 'ग्राहकाचे नाव' },
-  enterPhoneNumber: { en: 'Phone number', hi: 'फोन नंबर', mr: 'फोन नंबर' },
-  enterAddress: { en: 'Address', hi: 'पता', mr: 'पत्ता' },
-  searchForParty: { en: 'Search for a party', hi: 'पार्टी खोजें', mr: 'पार्टी शोधा' },
-
-  // ── Bills ──
+  
+  // Bills
   bills: { en: 'Bills', hi: 'बिल', mr: 'बिल' },
   billNumber: { en: 'Bill Number', hi: 'बिल नंबर', mr: 'बिल नंबर' },
   billNo: { en: 'Bill No', hi: 'बिल नं', mr: 'बिल नं' },
-  createBill: { en: 'Create Bill', hi: 'बिल बनाएं', mr: 'बिल तयार करा' },
-  saveBill: { en: 'Save Bill', hi: 'बिल सहेजें', mr: 'बिल सेव्ह करा' },
-  editBill: { en: 'Edit Bill', hi: 'बिल संपादित करें', mr: 'बिल संपादित करा' },
-  editBills: { en: 'Edit Bills', hi: 'बिल संपादित करें', mr: 'बिल संपादित करा' },
-  billCreated: { en: 'Bill Created!', hi: 'बिल बन गया!', mr: 'बिल तयार झाले!' },
-  billSaved: { en: 'Bill saved!', hi: 'बिल सहेजा गया!', mr: 'बिल सेव्ह झाले!' },
-  billUpdated: { en: 'Bill updated successfully!', hi: 'बिल सफलतापूर्वक अपडेट हुआ!', mr: 'बिल यशस्वीरित्या अपडेट झाले!' },
-  billDeleted: { en: 'Bill deleted', hi: 'बिल हटाया गया', mr: 'बिल हटवले' },
-  failedToSaveBill: { en: 'Failed to save bill', hi: 'बिल सहेजने में विफल', mr: 'बिल सेव्ह करण्यात अयशस्वी' },
-  failedToUpdateBill: { en: 'Failed to update bill', hi: 'बिल अपडेट करने में विफल', mr: 'बिल अपडेट करण्यात अयशस्वी' },
-  failedToDeleteBill: { en: 'Failed to delete bill', hi: 'बिल हटाने में विफल', mr: 'बिल हटवण्यात अयशस्वी' },
-  failedToLoadBills: { en: 'Failed to load bills', hi: 'बिल लोड करने में विफल', mr: 'बिल लोड करण्यात अयशस्वी' },
-  noBillsYet: { en: 'No bills yet', hi: 'अभी कोई बिल नहीं', mr: 'अजून कोणतेही बिल नाही' },
-  noBillsFound: { en: 'No bills found', hi: 'कोई बिल नहीं मिला', mr: 'कोणतेही बिल सापडले नाही' },
-  createFirstBill: { en: 'Create your first bill to see it here', hi: 'यहां देखने के लिए अपना पहला बिल बनाएं', mr: 'येथे पाहण्यासाठी आपले पहिले बिल तयार करा' },
-  tryAdjustingSearch: { en: 'Try adjusting your search', hi: 'अपनी खोज बदलें', mr: 'आपला शोध बदलून पहा' },
-  searchBills: { en: 'Search bills by number or customer...', hi: 'नंबर या ग्राहक से बिल खोजें...', mr: 'नंबर किंवा ग्राहकाने बिल शोधा...' },
-  totalBills: { en: 'Total Bills', hi: 'कुल बिल', mr: 'एकूण बिल' },
-  revenue: { en: 'Revenue', hi: 'राजस्व', mr: 'महसूल' },
-  invoiceNo: { en: 'Invoice No.', hi: 'इनवॉइस नं.', mr: 'इनव्हॉइस नं.' },
-  billedItems: { en: 'Billed Items', hi: 'बिल की गई वस्तुएं', mr: 'बिल केलेल्या वस्तू' },
-  itemSubtotal: { en: 'Item Subtotal', hi: 'वस्तू उप योग', mr: 'वस्तू उप बेरीज' },
-  noItemsAdded: { en: 'No items added', hi: 'कोई वस्तू नहीं जोड़ी गई', mr: 'कोणतीही वस्तू जोडली नाही' },
-  noItemsAddedYet: { en: 'No items added yet.', hi: 'अभी तक कोई वस्तू नहीं जोड़ी गई।', mr: 'अजून कोणतीही वस्तू जोडली नाही.' },
-  selectCustomerAndAddItems: { en: 'Select a customer and add items', hi: 'ग्राहक चुनें और वस्तुएं जोड़ें', mr: 'ग्राहक निवडा आणि वस्तू जोडा' },
-  addItems: { en: 'Add Items', hi: 'वस्तुएं जोड़ें', mr: 'वस्तू जोडा' },
-  tax: { en: 'Tax', hi: 'कर', mr: 'कर' },
-  taxPercent: { en: 'Tax %', hi: 'कर %', mr: 'कर %' },
-  saving: { en: 'Saving...', hi: 'सहेज रहे हैं...', mr: 'सेव्ह होत आहे...' },
-  updating: { en: 'Updating...', hi: 'अपडेट हो रहा है...', mr: 'अपडेट होत आहे...' },
-  qty: { en: 'Qty', hi: 'मात्रा', mr: 'प्रमाण' },
-  selected: { en: 'Selected', hi: 'चयनित', mr: 'निवडलेले' },
-  updateBillDetails: { en: 'Update bill details and items', hi: 'बिल का विवरण और वस्तुएं अपडेट करें', mr: 'बिलाचे तपशील आणि वस्तू अपडेट करा' },
-
-  // ── Billing Actions ──
-  addTransaction: { en: 'Add Txn', hi: 'लेन-देन जोड़ें', mr: 'व्यवहार जोडा' },
-  addNewSale: { en: 'Add New Sale', hi: 'नई बिक्री जोड़ें', mr: 'नवीन विक्री जोडा' },
-  addTransactionFull: { en: 'Add Transaction', hi: 'लेन-देन जोड़ें', mr: 'व्यवहार जोडा' },
-  noTransactionsYet: { en: 'No transactions yet', hi: 'अभी कोई लेन-देन नहीं', mr: 'अजून कोणताही व्यवहार नाही' },
-  searchForTransaction: { en: 'Search for a transaction', hi: 'लेन-देन खोजें', mr: 'व्यवहार शोधा' },
-
-  // ── Print & Share ──
-  print: { en: 'Print', hi: 'प्रिंट', mr: 'प्रिंट' },
-  printReceipt: { en: 'Print Receipt', hi: 'रसीद प्रिंट करें', mr: 'पावती प्रिंट करा' },
-  printed: { en: 'Printed!', hi: 'प्रिंट हो गया!', mr: 'प्रिंट झाले!' },
-  printFailed: { en: 'Print failed', hi: 'प्रिंट विफल', mr: 'प्रिंट अयशस्वी' },
-  downloadPDF: { en: 'Download PDF', hi: 'PDF डाउनलोड करें', mr: 'PDF डाउनलोड करा' },
-  pdfDownloaded: { en: 'PDF downloaded!', hi: 'PDF डाउनलोड हुई!', mr: 'PDF डाउनलोड झाली!' },
-  failedToGeneratePDF: { en: 'Failed to generate PDF', hi: 'PDF बनाने में विफल', mr: 'PDF तयार करण्यात अयशस्वी' },
-  sharePDF: { en: 'Share PDF', hi: 'PDF शेयर करें', mr: 'PDF शेअर करा' },
-  shared: { en: 'Shared!', hi: 'शेयर हो गया!', mr: 'शेअर झाले!' },
-  failedToSharePDF: { en: 'Failed to share PDF', hi: 'PDF शेयर करने में विफल', mr: 'PDF शेअर करण्यात अयशस्वी' },
-  shareWithCustomer: { en: 'Choose how to share with your customer.', hi: 'ग्राहक के साथ कैसे शेयर करें चुनें।', mr: 'ग्राहकासोबत कसे शेअर करायचे ते निवडा.' },
-  createAnotherBill: { en: 'Create Another Bill', hi: 'एक और बिल बनाएं', mr: 'आणखी एक बिल तयार करा' },
-  pdf: { en: 'PDF', hi: 'PDF', mr: 'PDF' },
-
-  // ── Bluetooth ──
-  connected: { en: 'Connected', hi: 'कनेक्ट', mr: 'कनेक्ट' },
-  disconnected: { en: 'Disconnected', hi: 'डिस्कनेक्ट', mr: 'डिस्कनेक्ट' },
-
-  // ── Online / Offline ──
-  online: { en: 'Online', hi: 'ऑनलाइन', mr: 'ऑनलाइन' },
-  offline: { en: 'Offline', hi: 'ऑफ़लाइन', mr: 'ऑफलाइन' },
-  pending: { en: 'pending', hi: 'लंबित', mr: 'प्रलंबित' },
-  billSavedOffline: { en: 'Bill saved offline! Will sync when back online.', hi: 'बिल ऑफ़लाइन सहेजा गया! ऑनलाइन होने पर सिंक होगा।', mr: 'बिल ऑफलाइन सेव्ह झाले! ऑनलाइन आल्यावर सिंक होईल.' },
-  loadedCachedData: { en: 'Loaded cached data (offline mode)', hi: 'कैश्ड डेटा लोड हुआ (ऑफ़लाइन मोड)', mr: 'कॅशेड डेटा लोड झाला (ऑफलाइन मोड)' },
-  failedToLoadData: { en: 'Failed to load data', hi: 'डेटा लोड करने में विफल', mr: 'डेटा लोड करण्यात अयशस्वी' },
-
-  // ── Navigation ──
-  home: { en: 'HOME', hi: 'होम', mr: 'होम' },
-  dashboard: { en: 'DASHBOARD', hi: 'डैशबोर्ड', mr: 'डॅशबोर्ड' },
-  menu: { en: 'MENU', hi: 'मेनू', mr: 'मेनू' },
-  itemsManagement: { en: 'Items Management', hi: 'वस्तू प्रबंधन', mr: 'वस्तू व्यवस्थापन' },
-  customerManagement: { en: 'Customer Management', hi: 'ग्राहक प्रबंधन', mr: 'ग्राहक व्यवस्थापन' },
-  billsAndReports: { en: 'Bills & Reports', hi: 'बिल और रिपोर्ट', mr: 'बिल आणि अहवाल' },
-
-  // ── Dashboard ──
-  quickLinks: { en: 'Quick Links', hi: 'त्वरित लिंक', mr: 'जलद लिंक' },
-  saleReport: { en: 'Sale Report', hi: 'बिक्री रिपोर्ट', mr: 'विक्री अहवाल' },
-  settings: { en: 'Settings', hi: 'सेटिंग्स', mr: 'सेटिंग्ज' },
-  showAll: { en: 'Show All', hi: 'सभी देखें', mr: 'सर्व पहा' },
-  transactionDetails: { en: 'Transaction Details', hi: 'लेन-देन विवरण', mr: 'व्यवहार तपशील' },
-  partyDetails: { en: 'Party Details', hi: 'पार्टी विवरण', mr: 'पार्टी तपशील' },
-
-  // ── Reports ──
-  reportsAndAnalytics: { en: 'Reports & Analytics', hi: 'रिपोर्ट और विश्लेषण', mr: 'अहवाल आणि विश्लेषण' },
-  viewBusinessPerformance: { en: 'View your business performance', hi: 'अपने व्यापार का प्रदर्शन देखें', mr: 'आपल्या व्यवसायाची कामगिरी पहा' },
-  reportFilters: { en: 'Report Filters', hi: 'रिपोर्ट फ़िल्टर', mr: 'अहवाल फिल्टर' },
-  fromDate: { en: 'From Date', hi: 'तारीख से', mr: 'तारीख पासून' },
-  toDate: { en: 'To Date', hi: 'तारीख तक', mr: 'तारीख पर्यंत' },
-  reportType: { en: 'Report Type', hi: 'रिपोर्ट प्रकार', mr: 'अहवाल प्रकार' },
-  daily: { en: 'Daily', hi: 'दैनिक', mr: 'दैनंदिन' },
-  weekly: { en: 'Weekly', hi: 'साप्ताहिक', mr: 'साप्ताहिक' },
-  monthly: { en: 'Monthly', hi: 'मासिक', mr: 'मासिक' },
-  yearly: { en: 'Yearly', hi: 'वार्षिक', mr: 'वार्षिक' },
-  last7days: { en: 'Last 7 days', hi: 'पिछले 7 दिन', mr: 'मागील 7 दिवस' },
-  last30days: { en: 'Last 30 days', hi: 'पिछले 30 दिन', mr: 'मागील 30 दिवस' },
-  last3months: { en: 'Last 3 months', hi: 'पिछले 3 महीने', mr: 'मागील 3 महिने' },
-  generateReport: { en: 'Generate Report', hi: 'रिपोर्ट बनाएं', mr: 'अहवाल तयार करा' },
-  totalRevenue: { en: 'Total Revenue', hi: 'कुल राजस्व', mr: 'एकूण महसूल' },
-  totalItems: { en: 'Total Items', hi: 'कुल वस्तुएं', mr: 'एकूण वस्तू' },
-  avgBillValue: { en: 'Avg Bill Value', hi: 'औसत बिल मूल्य', mr: 'सरासरी बिल मूल्य' },
-  topCustomers: { en: 'Top Customers', hi: 'शीर्ष ग्राहक', mr: 'शीर्ष ग्राहक' },
-  revenueBy: { en: 'Revenue by', hi: 'राजस्व अनुसार', mr: 'महसूल अनुसार' },
-  nBills: { en: 'bills', hi: 'बिल', mr: 'बिल' },
-  noCustomerData: { en: 'No customer data available', hi: 'कोई ग्राहक डेटा उपलब्ध नहीं', mr: 'कोणताही ग्राहक डेटा उपलब्ध नाही' },
-  noDataForPeriod: { en: 'No data available for selected period', hi: 'चयनित अवधि के लिए कोई डेटा उपलब्ध नहीं', mr: 'निवडलेल्या कालावधीसाठी कोणताही डेटा उपलब्ध नाही' },
-  pleasSelectDateRange: { en: 'Please select date range', hi: 'कृपया दिनांक सीमा चुनें', mr: 'कृपया तारीख श्रेणी निवडा' },
-  failedToGenerateReport: { en: 'Failed to generate report', hi: 'रिपोर्ट बनाने में विफल', mr: 'अहवाल तयार करण्यात अयशस्वी' },
-
-  // ── Auth ──
-  welcomeBack: { en: 'Welcome Back', hi: 'वापस स्वागत है', mr: 'पुन्हा स्वागत' },
-  signInOrCreate: { en: 'Sign in or create a new account', hi: 'साइन इन करें या नया खाता बनाएं', mr: 'साइन इन करा किंवा नवीन खाते तयार करा' },
-  signIn: { en: 'Sign In', hi: 'साइन इन', mr: 'साइन इन' },
-  signUp: { en: 'Sign Up', hi: 'साइन अप', mr: 'साइन अप' },
-  email: { en: 'Email', hi: 'ईमेल', mr: 'ईमेल' },
-  password: { en: 'Password', hi: 'पासवर्ड', mr: 'पासवर्ड' },
-  businessName: { en: 'Business Name', hi: 'व्यापार का नाम', mr: 'व्यवसायाचे नाव' },
-  enterEmail: { en: 'Enter your email', hi: 'अपना ईमेल दर्ज करें', mr: 'आपला ईमेल प्रविष्ट करा' },
-  enterPassword: { en: 'Enter your password', hi: 'अपना पासवर्ड दर्ज करें', mr: 'आपला पासवर्ड प्रविष्ट करा' },
-  enterBusinessName: { en: 'Your business name', hi: 'आपके व्यापार का नाम', mr: 'आपल्या व्यवसायाचे नाव' },
-  createPassword: { en: 'Create a password (min 6 characters)', hi: 'पासवर्ड बनाएं (कम से कम 6 अक्षर)', mr: 'पासवर्ड तयार करा (किमान 6 अक्षरे)' },
-  signingIn: { en: 'Signing In...', hi: 'साइन इन हो रहा है...', mr: 'साइन इन होत आहे...' },
-  creatingAccount: { en: 'Creating Account...', hi: 'खाता बना रहे हैं...', mr: 'खाते तयार होत आहे...' },
-  createAccount: { en: 'Create Account', hi: 'खाता बनाएं', mr: 'खाते तयार करा' },
-  signedInSuccess: { en: 'Signed in successfully!', hi: 'सफलतापूर्वक साइन इन हुआ!', mr: 'यशस्वीरित्या साइन इन झाले!' },
-  accountCreated: { en: 'Account created! Please check your email for verification.', hi: 'खाता बन गया! कृपया सत्यापन के लिए अपना ईमेल जांचें।', mr: 'खाते तयार झाले! कृपया सत्यापनासाठी आपला ईमेल तपासा.' },
-  invalidCredentials: { en: 'Invalid email or password.', hi: 'अमान्य ईमेल या पासवर्ड।', mr: 'अवैध ईमेल किंवा पासवर्ड.' },
-  emailNotConfirmed: { en: 'Please check your email and click the confirmation link.', hi: 'कृपया अपना ईमेल जांचें और पुष्टि लिंक पर क्लिक करें।', mr: 'कृपया आपला ईमेल तपासा आणि पुष्टीकरण लिंकवर क्लिक करा.' },
-  userAlreadyExists: { en: 'An account with this email already exists.', hi: 'इस ईमेल से पहले से खाता है।', mr: 'या ईमेलने आधीच खाते आहे.' },
-  passwordTooShort: { en: 'Password should be at least 6 characters long.', hi: 'पासवर्ड कम से कम 6 अक्षर का होना चाहिए।', mr: 'पासवर्ड किमान 6 अक्षरांचा असावा.' },
-  unexpectedError: { en: 'An unexpected error occurred.', hi: 'एक अप्रत्याशित त्रुटि हुई।', mr: 'एक अनपेक्षित त्रुटी आली.' },
-  inventory: { en: 'Inventory', hi: 'सामग्री', mr: 'साठा' },
-  billing: { en: 'Billing', hi: 'बिलिंग', mr: 'बिलिंग' },
-  securePrivateMobile: { en: 'Secure • Private • Mobile-First', hi: 'सुरक्षित • निजी • मोबाइल-प्रथम', mr: 'सुरक्षित • खाजगी • मोबाइल-प्रथम' },
-
-  // ── Splash Screen ──
-  smartBillingSolution: { en: 'Smart Billing Solution', hi: 'स्मार्ट बिलिंग समाधान', mr: 'स्मार्ट बिलिंग सोल्यूशन' },
-
-  // ── Business ──
+  total: { en: 'Total', hi: 'कुल', mr: 'एकूण' },
+  subtotal: { en: 'Sub Total', hi: 'उप योग', mr: 'उप बेरीज' },
+  
+  // Units
+  patti: { en: 'Patti', hi: 'पत्ती', mr: 'पत्ती' },
+  box: { en: 'Box', hi: 'डिब्बा', mr: 'बॉक्स' },
+  
+  // Business
   maheshwariAgency: { en: 'MAHESHWARI AGENCY', hi: 'महेश्वरी एजेंसी', mr: 'माहेश्वरी एजन्सी' },
-  maheshwariAgencies: { en: 'MAHESHWARI AGENCIES', hi: 'महेश्वरी एजेंसीज', mr: 'माहेश्वरी एजन्सीज' },
-  thankYou: { en: 'Thank you for your business!', hi: 'आपके व्यापार के लिए धन्यवाद!', mr: 'आपल्या व्यवसायासाठी धन्यवाद!' },
-
-  // ── Sign Out ──
-  signOut: { en: 'Sign Out', hi: 'साइन आउट', mr: 'साइन आउट' },
-  signedOutSuccess: { en: 'Signed out successfully', hi: 'सफलतापूर्वक साइन आउट हुआ', mr: 'यशस्वीरित्या साइन आउट झाले' },
-  errorSigningOut: { en: 'Error signing out', hi: 'साइन आउट में त्रुटि', mr: 'साइन आउट मध्ये त्रुटी' },
-
-  // ── Misc Errors ──
-  selectCustomerError: { en: 'Select a customer', hi: 'ग्राहक चुनें', mr: 'ग्राहक निवडा' },
-  addAtLeastOneItem: { en: 'Add at least one item', hi: 'कम से कम एक वस्तू जोड़ें', mr: 'किमान एक वस्तू जोडा' },
-  quantityMustBeGreater: { en: 'Quantity must be > 0', hi: 'मात्रा 0 से अधिक होनी चाहिए', mr: 'प्रमाण 0 पेक्षा जास्त असावे' },
-  pleaseSelectCustomer: { en: 'Please select a customer', hi: 'कृपया एक ग्राहक चुनें', mr: 'कृपया एक ग्राहक निवडा' },
-  pleaseAddValidItem: { en: 'Please add at least one valid item', hi: 'कृपया कम से कम एक वैध वस्तू जोड़ें', mr: 'कृपया किमान एक वैध वस्तू जोडा' },
-  customerNotFound: { en: 'Customer not found', hi: 'ग्राहक नहीं मिला', mr: 'ग्राहक सापडला नाही' },
-  selectItem: { en: 'Select item', hi: 'वस्तू चुनें', mr: 'वस्तू निवडा' },
-  selectCustomer: { en: 'Select customer', hi: 'ग्राहक चुनें', mr: 'ग्राहक निवडा' },
-  failedToPrint: { en: 'Failed to print', hi: 'प्रिंट विफल', mr: 'प्रिंट अयशस्वी' },
-  shareFailed: { en: 'Share failed', hi: 'शेयर विफल', mr: 'शेअर अयशस्वी' },
-  weekOf: { en: 'Week of', hi: 'सप्ताह', mr: 'आठवडा' },
+  thankYou: { en: 'Thank you for your business!', hi: 'आपके व्यापार के लिए धन्यवाद!', mr: 'आपल्या व्यवसायासाठी धन्यवाद!' }
 };
 
 interface LocalizationContextType {
@@ -280,13 +64,18 @@ export const LocalizationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [language, setLanguage] = useState<Language>('en');
 
   useEffect(() => {
+    // Load saved language from localStorage
     const savedLanguage = localStorage.getItem('app-language') as Language;
     if (savedLanguage && ['en', 'hi', 'mr'].includes(savedLanguage)) {
       setLanguage(savedLanguage);
     } else {
+      // Auto-detect language based on browser locale
       const browserLang = navigator.language.split('-')[0];
-      if (browserLang === 'hi') setLanguage('hi');
-      else if (browserLang === 'mr') setLanguage('mr');
+      if (browserLang === 'hi') {
+        setLanguage('hi');
+      } else if (browserLang === 'mr') {
+        setLanguage('mr');
+      }
     }
   }, []);
 

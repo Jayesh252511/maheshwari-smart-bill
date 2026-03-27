@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill } from '@/types/bill';
-import { useLocalization } from '@/contexts/LocalizationContext';
 
 interface DashboardStats {
   items: number;
@@ -29,7 +28,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'transactions' | 'parties'>('transactions');
   const { user } = useAuth();
-  const { t } = useLocalization();
 
   useEffect(() => {
     if (user) {
@@ -93,9 +91,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         if (devices.length > 0) await bluetoothPrinter.connectToPrinter(devices[0]);
       }
       await bluetoothPrinter.printReceipt(bill, { name: 'Maheshwari Agency', address: 'matakari galli shegaon', phone: '7020709696' });
-      toast.success(t('printed'));
+      toast.success('Printed!');
     } catch (e) {
-      toast.error(t('printFailed'));
+      toast.error('Print failed');
     }
   };
 
@@ -103,7 +101,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     try {
       await sharePDF(bill, { name: 'Maheshwari Agency', address: 'matakari galli shegaon', phone: '7020709696' });
     } catch (e) {
-      toast.error(t('shareFailed'));
+      toast.error('Share failed');
     }
   };
 
@@ -142,7 +140,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             activeTab === 'transactions' ? 'bg-accent text-accent-foreground shadow-sm' : 'text-muted-foreground'
           }`}
         >
-          {t('transactionDetails')}
+          Transaction Details
         </button>
         <button
           onClick={() => setActiveTab('parties')}
@@ -150,7 +148,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             activeTab === 'parties' ? 'bg-accent text-accent-foreground shadow-sm' : 'text-muted-foreground'
           }`}
         >
-          {t('partyDetails')}
+          Party Details
         </button>
       </div>
 
@@ -158,31 +156,31 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         <>
           {/* Quick Links */}
           <div className="section-card p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3">{t('quickLinks')}</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-3">Quick Links</h3>
             <div className="grid grid-cols-4 gap-3">
               <button onClick={() => onNavigate('billing')} className="quick-link-card">
                 <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
                   <Receipt className="h-5 w-5 text-accent" />
                 </div>
-                <span className="text-xs font-medium text-foreground">{t('addTransaction')}</span>
+                <span className="text-xs font-medium text-foreground">Add Txn</span>
               </button>
               <button onClick={() => onNavigate('reports')} className="quick-link-card">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   <FileText className="h-5 w-5 text-primary" />
                 </div>
-                <span className="text-xs font-medium text-foreground">{t('saleReport')}</span>
+                <span className="text-xs font-medium text-foreground">Sale Report</span>
               </button>
               <button onClick={() => onNavigate('items')} className="quick-link-card">
                 <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
                   <Settings className="h-5 w-5 text-warning" />
                 </div>
-                <span className="text-xs font-medium text-foreground">{t('settings')}</span>
+                <span className="text-xs font-medium text-foreground">Settings</span>
               </button>
               <button onClick={() => onNavigate('bills')} className="quick-link-card">
                 <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </div>
-                <span className="text-xs font-medium text-foreground">{t('showAll')}</span>
+                <span className="text-xs font-medium text-foreground">Show All</span>
               </button>
             </div>
           </div>
@@ -191,7 +189,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="section-card flex items-center gap-3 px-4 py-3">
             <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
             <Input
-              placeholder={t('searchForTransaction')}
+              placeholder="Search for a transaction"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="border-0 shadow-none focus-visible:ring-0 px-0 h-auto py-0 text-sm"
@@ -203,9 +201,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             {filteredBills.length === 0 ? (
               <div className="section-card flex flex-col items-center justify-center py-12">
                 <Receipt className="h-10 w-10 text-muted-foreground mb-3" />
-                <p className="text-sm text-muted-foreground">{t('noTransactionsYet')}</p>
+                <p className="text-sm text-muted-foreground">No transactions yet</p>
                 <Button onClick={() => onNavigate('billing')} className="mt-3" size="sm">
-                  <Plus className="h-4 w-4 mr-1" /> {t('addTransactionFull')}
+                  <Plus className="h-4 w-4 mr-1" /> Add Transaction
                 </Button>
               </div>
             ) : (
@@ -214,7 +212,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <p className="font-semibold text-foreground">{bill.customer_name}</p>
-                      <span className="sale-badge mt-1">{t('sale')}</span>
+                      <span className="sale-badge mt-1">SALE</span>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">#{bill.bill_number}</p>
@@ -224,11 +222,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   <div className="flex items-end justify-between mt-3">
                     <div className="flex gap-8">
                       <div>
-                        <p className="text-xs text-muted-foreground">{t('total')}</p>
+                        <p className="text-xs text-muted-foreground">Total</p>
                         <p className="font-semibold text-foreground">₹ {bill.total_amount.toFixed(2)}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">{t('balance')}</p>
+                        <p className="text-xs text-muted-foreground">Balance</p>
                         <p className="font-semibold text-foreground">₹ {bill.total_amount.toFixed(2)}</p>
                       </div>
                     </div>
@@ -256,12 +254,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="section-card flex items-center gap-3 px-4 py-3">
             <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
             <Input
-              placeholder={t('searchForParty')}
+              placeholder="Search for a party"
               className="border-0 shadow-none focus-visible:ring-0 px-0 h-auto py-0 text-sm"
             />
           </div>
           <Button onClick={() => onNavigate('customers')} className="w-full" variant="outline">
-            <Users className="h-4 w-4 mr-2" /> {t('viewAllCustomers')}
+            <Users className="h-4 w-4 mr-2" /> View All Customers
           </Button>
         </div>
       )}
@@ -274,7 +272,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           size="mobile"
         >
           <Receipt className="h-5 w-5 mr-2" />
-          {t('addNewSale')}
+          Add New Sale
         </Button>
       </div>
     </div>

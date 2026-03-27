@@ -4,8 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LogOut, Settings, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { Home, BarChart3, Package, Menu } from 'lucide-react';
-import { useLocalization } from '@/contexts/LocalizationContext';
-import LanguageSelector from '@/components/LanguageSelector';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,26 +12,23 @@ interface LayoutProps {
   onNavigate?: (page: string) => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, title, currentPage = 'dashboard', onNavigate }) => {
+const Layout: React.FC<LayoutProps> = ({ children, title = 'MAHESHWARI AGENCIES', currentPage = 'dashboard', onNavigate }) => {
   const { signOut, user } = useAuth();
-  const { t } = useLocalization();
-
-  const displayTitle = title || t('maheshwariAgencies');
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success(t('signedOutSuccess'));
+      toast.success('Signed out successfully');
     } catch (error) {
-      toast.error(t('errorSigningOut'));
+      toast.error('Error signing out');
     }
   };
 
   const navItems = [
-    { id: 'dashboard', label: t('home'), icon: Home },
-    { id: 'bills', label: t('dashboard'), icon: BarChart3 },
-    { id: 'items', label: t('items'), icon: Package },
-    { id: 'menu', label: t('menu'), icon: Menu },
+    { id: 'dashboard', label: 'HOME', icon: Home },
+    { id: 'bills', label: 'DASHBOARD', icon: BarChart3 },
+    { id: 'items', label: 'ITEMS', icon: Package },
+    { id: 'menu', label: 'MENU', icon: Menu },
   ];
 
   return (
@@ -46,11 +41,10 @@ const Layout: React.FC<LayoutProps> = ({ children, title, currentPage = 'dashboa
               <span className="text-primary font-bold text-sm">M</span>
             </div>
             <h1 className="text-lg font-bold text-foreground tracking-tight truncate max-w-[200px] sm:max-w-none">
-              {displayTitle}
+              {title}
             </h1>
           </div>
           <div className="flex items-center gap-1">
-            <LanguageSelector />
             <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground">
               <Bell className="h-5 w-5" />
             </Button>
@@ -86,6 +80,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title, currentPage = 'dashboa
                   key={item.id}
                   onClick={() => {
                     if (item.id === 'menu') {
+                      // Toggle a menu or navigate to customers as default
                       onNavigate('customers');
                     } else {
                       onNavigate(item.id);
