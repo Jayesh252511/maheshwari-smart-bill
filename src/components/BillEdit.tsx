@@ -230,7 +230,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-foreground">Total</Label>
+                    <Label className="text-xs font-bold text-foreground">{t('total')}</Label>
                     <Input value={billItem.total_price.toFixed(0)} disabled className="h-8 text-sm font-bold" />
                   </div>
                 </div>
