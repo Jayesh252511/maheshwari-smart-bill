@@ -297,7 +297,7 @@ const BillingSystem: React.FC = () => {
 
           {showSuggestions && itemSearch.trim() && filteredItems.length === 0 && (
             <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg p-3">
-              <p className="text-sm text-muted-foreground text-center">No items found</p>
+              <p className="text-sm text-muted-foreground text-center">{t('noItemsFound')}</p>
             </div>
           )}
         </div>
