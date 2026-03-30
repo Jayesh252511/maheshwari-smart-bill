@@ -448,7 +448,7 @@ const BillingSystem: React.FC = () => {
             </Button>
             {navigator.share && (
               <Button onClick={handleSharePDF} variant="outline" className="w-full" size="mobile">
-                <Share className="h-4 w-4 mr-2" /> Share PDF
+                <Share className="h-4 w-4 mr-2" /> {t('sharePDF')}
               </Button>
             )}
             <Button onClick={() => { resetBill(); setPrintDialogOpen(false); }} variant="secondary" className="w-full">
