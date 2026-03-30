@@ -305,7 +305,7 @@ const BillingSystem: React.FC = () => {
         {/* Selected item badge */}
         {selectedItem && (
           <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
-            <span className="text-xs text-primary font-bold">Selected:</span>
+            <span className="text-xs text-primary font-bold">{t('selected')}</span>
             <span className="text-sm font-bold text-foreground">{items.find(i => i.id === selectedItem)?.name}</span>
           </div>
         )}
