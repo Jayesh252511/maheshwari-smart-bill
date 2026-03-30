@@ -128,8 +128,8 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4">
         <DialogHeader className="pb-2">
-          <DialogTitle className="text-base font-bold">Edit Bills - {bill.bill_number}</DialogTitle>
-          <DialogDescription className="text-xs">Update bill details and items</DialogDescription>
+          <DialogTitle className="text-base font-bold">{t('editBillTitle')} - {bill.bill_number}</DialogTitle>
+          <DialogDescription className="text-xs">{t('updateBillDetails')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
