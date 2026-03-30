@@ -405,10 +405,10 @@ const BillingSystem: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-2 pt-1">
-            <Button variant="outline" onClick={resetBill} size="sm">Clear</Button>
+            <Button variant="outline" onClick={resetBill} size="sm">{t('clear')}</Button>
             <Button onClick={handleCheckout} disabled={saving || billItems.length === 0} size="sm">
               <Receipt className="h-4 w-4 mr-1" />
-              {saving ? 'Saving...' : 'Save Bill'}
+              {saving ? t('saving') : t('saveBill')}
             </Button>
           </div>
         </div>
