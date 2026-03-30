@@ -436,8 +436,8 @@ const BillingSystem: React.FC = () => {
       <Dialog open={printDialogOpen} onOpenChange={setPrintDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Bill Created!</DialogTitle>
-            <DialogDescription>Choose how to share with your customer.</DialogDescription>
+            <DialogTitle>{t('billCreated')}</DialogTitle>
+            <DialogDescription>{t('chooseHowToShare')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <Button onClick={handlePrint} className="w-full" size="mobile">
