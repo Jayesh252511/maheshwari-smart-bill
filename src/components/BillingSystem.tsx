@@ -400,7 +400,7 @@ const BillingSystem: React.FC = () => {
             </div>
           </div>
           <div className="flex justify-between font-bold text-base border-t border-dashed pt-2">
-            <span>Total:</span>
+            <span>{t('total')}:</span>
             <span>₹{total.toFixed(2)}</span>
           </div>
 
