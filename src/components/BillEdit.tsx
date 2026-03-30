@@ -199,7 +199,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                 {/* Row 2: Quantity, Unit, Price, Total */}
                 <div className="grid grid-cols-4 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-foreground">Quantity</Label>
+                    <Label className="text-xs font-bold text-foreground">{t('quantity')}</Label>
                     <div className="flex items-center gap-1">
                       <Button variant="outline" size="icon" className="h-8 w-8 flex-shrink-0"
                         onClick={() => updateBillItem(index, 'quantity', billItem.quantity - 1)}
