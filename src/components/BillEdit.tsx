@@ -252,7 +252,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
               <span>₹{subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold text-base border-t pt-2">
-              <span>Total:</span>
+              <span>{t('total')}:</span>
               <span>₹{total_amount.toFixed(2)}</span>
             </div>
           </div>
