@@ -82,7 +82,7 @@ const BillingSystem: React.FC = () => {
     const item = items.find(i => i.id === selectedItem);
     if (!item) return;
     const qty = parseInt(quantity) || 0;
-    if (qty <= 0) { toast.error('Quantity must be > 0'); return; }
+    if (qty <= 0) { toast.error(t('quantityMustBeGreater')); return; }
 
     const existingIdx = billItems.findIndex(bi => bi.item_id === selectedItem);
     if (existingIdx >= 0) {
