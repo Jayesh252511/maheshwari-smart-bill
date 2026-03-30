@@ -165,7 +165,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                     <Label className="text-xs font-bold text-foreground">{t('items')}</Label>
                     <Select value={billItem.item_id} onValueChange={(v) => updateBillItem(index, 'item_id', v)}>
                       <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Select item" />
+                        <SelectValue placeholder={t('selectItem')} />
                       </SelectTrigger>
                       <SelectContent>
                         <div className="p-2">
