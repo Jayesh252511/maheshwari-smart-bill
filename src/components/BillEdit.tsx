@@ -172,7 +172,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                           <div className="relative mb-2">
                             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                             <Input
-                              placeholder="Search..."
+                              placeholder={t('search') + '...'}
                               value={itemSearch}
                               onChange={(e) => setItemSearch(e.target.value)}
                               className="h-8 pl-7 text-xs"
