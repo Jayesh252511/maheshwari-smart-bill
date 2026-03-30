@@ -238,7 +238,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
             ))}
 
             {billItems.length === 0 && (
-              <p className="text-center py-6 text-sm text-muted-foreground">No items added yet.</p>
+              <p className="text-center py-6 text-sm text-muted-foreground">{t('noItemsAddedYet')}</p>
             )}
           </div>
 
