@@ -441,7 +441,7 @@ const BillingSystem: React.FC = () => {
           </DialogHeader>
           <div className="space-y-2">
             <Button onClick={handlePrint} className="w-full" size="mobile">
-              <Bluetooth className="h-4 w-4 mr-2" /> Print Receipt
+              <Bluetooth className="h-4 w-4 mr-2" /> {t('printReceipt')}
             </Button>
             <Button onClick={handleDownloadPDF} variant="outline" className="w-full" size="mobile">
               <Download className="h-4 w-4 mr-2" /> Download PDF
