@@ -227,12 +227,12 @@ const BillingSystem: React.FC = () => {
     <div className="space-y-3 pb-4">
       {/* Sale Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-foreground">Sale</h2>
+        <h2 className="text-lg font-bold text-foreground">{t('saleTitle')}</h2>
         <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
           printerConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'
         }`}>
           <Bluetooth className="h-3 w-3" />
-          {printerConnected ? 'Connected' : 'Disconnected'}
+          {printerConnected ? t('connected') : t('disconnected')}
         </div>
       </div>
 
