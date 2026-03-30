@@ -47,7 +47,7 @@ const BillingSystem: React.FC = () => {
       if (itemsRes.error) throw itemsRes.error;
       setCustomers(customersRes.data || []);
       setItems(itemsRes.data || []);
-    } catch { toast.error('Failed to load data'); } finally { setLoading(false); }
+    } catch { toast.error(t('failedToLoadData')); } finally { setLoading(false); }
   };
 
   const checkPrinterConnection = () => setPrinterConnected(bluetoothPrinter.isConnected());
