@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LogOut, Settings, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { Home, BarChart3, Package, Menu } from 'lucide-react';
+import { useLocalization } from '@/contexts/LocalizationContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,28 +13,30 @@ interface LayoutProps {
   onNavigate?: (page: string) => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, title = 'MAHESHWARI AGENCIES', currentPage = 'dashboard', onNavigate }) => {
+const Layout: React.FC<LayoutProps> = ({ children, title, currentPage = 'dashboard', onNavigate }) => {
   const { signOut, user } = useAuth();
+  const { t } = useLocalization();
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success('Signed out successfully');
+      toast.success(t('signedOutSuccess'));
     } catch (error) {
-      toast.error('Error signing out');
+      toast.error(t('errorSigningOut'));
     }
   };
 
   const navItems = [
-    { id: 'dashboard', label: 'HOME', icon: Home },
-    { id: 'bills', label: 'DASHBOARD', icon: BarChart3 },
-    { id: 'items', label: 'ITEMS', icon: Package },
-    { id: 'menu', label: 'MENU', icon: Menu },
+    { id: 'dashboard', label: t('home'), icon: Home },
+    { id: 'bills', label: t('dashboard'), icon: BarChart3 },
+    { id: 'items', label: t('items'), icon: Package },
+    { id: 'menu', label: t('menu'), icon: Menu },
   ];
+
+  const displayTitle = title || t('maheshwariAgencies');
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Clean Header */}
       <header className="bg-card border-b border-border sticky top-0 z-50">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
@@ -41,7 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'MAHESHWARI AGENCIES'
               <span className="text-primary font-bold text-sm">M</span>
             </div>
             <h1 className="text-lg font-bold text-foreground tracking-tight truncate max-w-[200px] sm:max-w-none">
-              {title}
+              {displayTitle}
             </h1>
           </div>
           <div className="flex items-center gap-1">
@@ -60,14 +63,12 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'MAHESHWARI AGENCIES'
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 p-4 pb-24 overflow-y-auto">
         <div className="max-w-4xl mx-auto">
           {children}
         </div>
       </main>
 
-      {/* Bottom Navigation Bar */}
       {onNavigate && (
         <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 bottom-nav">
           <div className="flex items-center justify-around py-2 px-2 max-w-4xl mx-auto">
@@ -80,7 +81,6 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'MAHESHWARI AGENCIES'
                   key={item.id}
                   onClick={() => {
                     if (item.id === 'menu') {
-                      // Toggle a menu or navigate to customers as default
                       onNavigate('customers');
                     } else {
                       onNavigate(item.id);
