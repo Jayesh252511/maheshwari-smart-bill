@@ -318,7 +318,7 @@ const BillingSystem: React.FC = () => {
           </div>
           <div className="flex items-end">
             <Button onClick={addItemToBill} className="h-10 px-4">
-              <Plus className="h-4 w-4 mr-1" /> Add
+              <Plus className="h-4 w-4 mr-1" /> {t('add')}
             </Button>
           </div>
         </div>
