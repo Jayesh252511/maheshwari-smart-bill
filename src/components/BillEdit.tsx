@@ -116,10 +116,10 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
         .insert(billItems.map(item => ({ bill_id: bill.id, item_id: item.item_id, quantity: item.quantity, unit_price: item.unit_price, total_price: item.total_price })));
       if (itemsError) throw itemsError;
 
-      toast.success('Bill updated successfully!');
+      toast.success(t('billUpdated'));
       onOpenChange(false);
       onBillUpdated();
-    } catch { toast.error('Failed to update bill'); } finally { setLoading(false); }
+    } catch { toast.error(t('failedToUpdateBill')); } finally { setLoading(false); }
   };
 
   const { subtotal, total_amount } = calculateTotals();
