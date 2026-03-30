@@ -147,9 +147,9 @@ const BillingSystem: React.FC = () => {
         customer_name: customer.name, customer_phone: customer.phone, customer_address: customer.address,
         items: billItems, subtotal, tax_amount: taxAmount, total_amount: total, status: 'completed', created_at: billData.created_at
       };
-      toast.success('Bill saved!');
+      toast.success(t('billSaved'));
       return bill;
-    } catch { toast.error('Failed to save bill'); return null; } finally { setSaving(false); }
+    } catch { toast.error(t('failedToSaveBill')); return null; } finally { setSaving(false); }
   };
 
   const handleCheckout = async () => {
