@@ -280,17 +280,20 @@ const BillingSystem: React.FC = () => {
         ) : (
           <div className="max-h-[280px] overflow-y-auto -mx-1 px-1 pb-1">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {filteredItems.map(item => {
+              {filteredItems.map((item, idx) => {
                 const isSelected = selectedItem === item.id;
                 const inBill = billItems.find(bi => bi.item_id === item.id);
+                const isAlt = idx % 2 === 1;
                 return (
                   <button
                     key={item.id}
                     onClick={() => selectItemFromSearch(item)}
                     className={`relative text-left rounded-lg border p-2.5 transition-all active:scale-[0.97] flex flex-col gap-1 min-h-[78px] ${
                       isSelected
-                        ? 'border-primary bg-primary/10 ring-2 ring-primary/30'
-                        : 'border-border bg-background hover:border-primary/50 hover:bg-accent/50'
+                        ? 'border-primary bg-primary/15 ring-2 ring-primary/30'
+                        : isAlt
+                          ? 'border-border bg-accent/40 hover:border-primary/50 hover:bg-accent/60'
+                          : 'border-border bg-background hover:border-primary/50 hover:bg-accent/30'
                     }`}
                   >
                     {inBill && (
