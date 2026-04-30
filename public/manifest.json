@@ -1,7 +1,7 @@
 {
-  "name": "Maheshwari Agency - Smart Billing",
-  "short_name": "Maheshwari Bill",
-  "description": "Mobile-first smart billing app with inventory, customer management, and thermal printing support",
+  "name": "DukaanPe - Smart Billing",
+  "short_name": "DukaanPe",
+  "description": "Fast, friendly mobile billing for Indian dukaans — inventory, customers, UPI and thermal printing.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
