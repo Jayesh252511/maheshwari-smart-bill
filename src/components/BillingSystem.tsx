@@ -442,14 +442,6 @@ const BillingSystem: React.FC = () => {
         </div>
       )}
 
-      {/* AI Voice Assistant */}
-      <div className="mt-2">
-        <AIVoiceAssistant
-          onAddItems={handleVoiceAddItems}
-          onSelectCustomer={handleVoiceSelectCustomer}
-          availableItems={items.map(item => ({ id: item.id, name: item.name, price: item.price }))}
-        />
-      </div>
 
       {/* Print Dialog */}
       <Dialog open={printDialogOpen} onOpenChange={setPrintDialogOpen}>
