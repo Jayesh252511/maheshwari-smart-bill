@@ -12,7 +12,7 @@ import { bluetoothPrinter } from '@/utils/bluetoothPrinter';
 import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill, BillItem, Customer, Item } from '@/types/bill';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import AIVoiceAssistant from './AIVoiceAssistant';
+
 
 const BillingSystem: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
