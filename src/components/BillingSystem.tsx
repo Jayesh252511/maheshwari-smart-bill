@@ -311,36 +311,77 @@ const BillingSystem: React.FC = () => {
           </div>
         )}
 
-        {/* Selected item + Quantity + Add */}
-        {selectedItem && (
-          <div className="space-y-2 pt-1 border-t border-dashed border-border">
-            <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
-              <span className="text-xs text-primary font-bold">{t('selected')}</span>
-              <span className="text-sm font-bold text-foreground truncate">{items.find(i => i.id === selectedItem)?.name}</span>
-            </div>
-            <div className="flex gap-2 items-end">
-              <div className="flex-1">
-                <Label className="text-xs text-muted-foreground">{t('qty')}</Label>
-                <div className="flex items-center gap-1 mt-1">
-                  <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0"
-                    onClick={() => setQuantity(String(Math.max(0, (parseInt(quantity) || 0) - 1)))}>
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)}
-                    placeholder="0" min="0"
-                    className="h-10 text-center text-sm font-bold bg-primary/5 border-primary/30" />
-                  <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0"
-                    onClick={() => setQuantity(String((parseInt(quantity) || 0) + 1))}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
+        {/* Selected item + Swipe-to-adjust + Add */}
+        {selectedItem && (() => {
+          const selItem = items.find(i => i.id === selectedItem);
+          let touchStartX = 0;
+          let touchStartY = 0;
+          let lastStep = 0;
+          const STEP_PX = 40;
+          const onTouchStart = (e: React.TouchEvent) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            lastStep = 0;
+          };
+          const onTouchMove = (e: React.TouchEvent) => {
+            const dx = e.touches[0].clientX - touchStartX;
+            const dy = e.touches[0].clientY - touchStartY;
+            if (Math.abs(dx) < Math.abs(dy)) return;
+            const step = Math.trunc(dx / STEP_PX);
+            if (step !== lastStep) {
+              const delta = step - lastStep;
+              setQuantity(prev => String(Math.max(0, (parseInt(prev) || 0) + delta)));
+              lastStep = step;
+              if (navigator.vibrate) navigator.vibrate(10);
+            }
+          };
+          return (
+            <div className="space-y-2 pt-1 border-t border-dashed border-border">
+              <div
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                className="relative bg-primary/5 border border-primary/20 rounded-lg px-3 py-3 select-none touch-pan-y overflow-hidden"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-primary font-bold uppercase">{t('selected')}</span>
+                    </div>
+                    <div className="text-sm font-bold text-foreground truncate">{selItem?.name}</div>
+                  </div>
+                  <div className="text-2xl font-bold text-primary tabular-nums min-w-[2.5rem] text-center">
+                    {quantity || 0}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-1.5 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-0.5">← {t('swipeLeft') || 'swipe to decrease'}</span>
+                  <span className="flex items-center gap-0.5">{t('swipeRight') || 'swipe to increase'} →</span>
                 </div>
               </div>
-              <Button onClick={addItemToBill} className="h-10 px-4">
-                <Plus className="h-4 w-4 mr-1" /> {t('add')}
-              </Button>
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground">{t('qty')}</Label>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0"
+                      onClick={() => setQuantity(String(Math.max(0, (parseInt(quantity) || 0) - 1)))}>
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)}
+                      placeholder="0" min="0"
+                      className="h-10 text-center text-sm font-bold bg-primary/5 border-primary/30" />
+                    <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0"
+                      onClick={() => setQuantity(String((parseInt(quantity) || 0) + 1))}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <Button onClick={addItemToBill} className="h-10 px-4">
+                  <Plus className="h-4 w-4 mr-1" /> {t('add')}
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Billed Items */}
