@@ -258,70 +258,89 @@ const BillingSystem: React.FC = () => {
 
       {/* Add Items Section */}
       <div className="bg-card rounded-lg border border-border p-3 space-y-3">
-        <h3 className="font-bold text-foreground text-sm">{t('addItems')}</h3>
-
-        {/* Search with autocomplete */}
-        <div ref={searchRef} className="relative">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={t('searchItemsPlaceholder')}
-              value={itemSearch}
-              onChange={(e) => {
-              setItemSearch(e.target.value);
-                setShowSuggestions(true);
-                if (!e.target.value.trim()) setSelectedItem('');
-              }}
-              onFocus={() => setShowSuggestions(true)}
-              className="h-11 pl-9 text-sm"
-            />
-          </div>
-
-          {/* Suggestions dropdown */}
-          {showDropdown && (
-            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-              {filteredItems.map(item => (
-                <button
-                  key={item.id}
-                  className={`w-full text-left px-3 py-2.5 text-sm hover:bg-accent flex items-center justify-between transition-colors ${
-                    selectedItem === item.id ? 'bg-accent' : ''
-                  }`}
-                  onClick={() => selectItemFromSearch(item)}
-                >
-                  <span className="font-bold text-foreground">{item.name}</span>
-                  <span className="text-xs text-muted-foreground">₹{item.price}/{item.unit}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {showSuggestions && itemSearch.trim() && filteredItems.length === 0 && (
-            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg p-3">
-              <p className="text-sm text-muted-foreground text-center">{t('noItemsFound')}</p>
-            </div>
-          )}
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-foreground text-sm">{t('addItems')}</h3>
+          <span className="text-xs text-muted-foreground">{filteredItems.length} {t('items') || 'items'}</span>
         </div>
 
-        {/* Selected item badge */}
-        {selectedItem && (
-          <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
-            <span className="text-xs text-primary font-bold">{t('selected')}</span>
-            <span className="text-sm font-bold text-foreground">{items.find(i => i.id === selectedItem)?.name}</span>
+        {/* Search bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder={t('searchItemsPlaceholder')}
+            value={itemSearch}
+            onChange={(e) => setItemSearch(e.target.value)}
+            className="h-10 pl-9 text-sm"
+          />
+        </div>
+
+        {/* Product grid - scrollable, tap to select */}
+        {filteredItems.length === 0 ? (
+          <div className="py-6 text-center text-sm text-muted-foreground">{t('noItemsFound')}</div>
+        ) : (
+          <div className="max-h-[280px] overflow-y-auto -mx-1 px-1 pb-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {filteredItems.map(item => {
+                const isSelected = selectedItem === item.id;
+                const inBill = billItems.find(bi => bi.item_id === item.id);
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => selectItemFromSearch(item)}
+                    className={`relative text-left rounded-lg border p-2.5 transition-all active:scale-[0.97] flex flex-col gap-1 min-h-[78px] ${
+                      isSelected
+                        ? 'border-primary bg-primary/10 ring-2 ring-primary/30'
+                        : 'border-border bg-background hover:border-primary/50 hover:bg-accent/50'
+                    }`}
+                  >
+                    {inBill && (
+                      <span className="absolute top-1 right-1 bg-success text-success-foreground text-[10px] font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center">
+                        {inBill.quantity}
+                      </span>
+                    )}
+                    <span className="font-bold text-foreground text-xs leading-tight line-clamp-2 pr-5">
+                      {item.name}
+                    </span>
+                    <span className="text-[11px] text-primary font-semibold mt-auto">
+                      ₹{item.price}<span className="text-muted-foreground font-normal">/{item.unit}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
-        {/* Quantity + Add */}
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <Label className="text-xs text-muted-foreground">{t('qty')}</Label>
-            <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="0" min="0" className="h-10 text-sm font-bold bg-primary/5 border-primary/30" />
+        {/* Selected item + Quantity + Add */}
+        {selectedItem && (
+          <div className="space-y-2 pt-1 border-t border-dashed border-border">
+            <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
+              <span className="text-xs text-primary font-bold">{t('selected')}</span>
+              <span className="text-sm font-bold text-foreground truncate">{items.find(i => i.id === selectedItem)?.name}</span>
+            </div>
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <Label className="text-xs text-muted-foreground">{t('qty')}</Label>
+                <div className="flex items-center gap-1 mt-1">
+                  <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0"
+                    onClick={() => setQuantity(String(Math.max(0, (parseInt(quantity) || 0) - 1)))}>
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)}
+                    placeholder="0" min="0"
+                    className="h-10 text-center text-sm font-bold bg-primary/5 border-primary/30" />
+                  <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0"
+                    onClick={() => setQuantity(String((parseInt(quantity) || 0) + 1))}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <Button onClick={addItemToBill} className="h-10 px-4">
+                <Plus className="h-4 w-4 mr-1" /> {t('add')}
+              </Button>
+            </div>
           </div>
-          <div className="flex items-end">
-            <Button onClick={addItemToBill} className="h-10 px-4">
-              <Plus className="h-4 w-4 mr-1" /> {t('add')}
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Billed Items */}
