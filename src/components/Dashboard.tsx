@@ -156,45 +156,37 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
       {activeTab === 'transactions' && (
         <>
-          {/* Quick Links */}
-          <div className="section-card p-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3">{t('quickLinks')}</h3>
-            <div className="grid grid-cols-4 gap-3">
-              <button onClick={() => onNavigate('billing')} className="quick-link-card">
-                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <Receipt className="h-5 w-5 text-accent" />
+          {/* Quick Links Section */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            {[
+              { label: 'addTxn', icon: Receipt, color: 'bg-[hsl(var(--comic-pink))]', action: () => onNavigate('billing') },
+              { label: 'saleReport', icon: FileText, color: 'bg-[hsl(var(--comic-green))]', action: () => onNavigate('reports') },
+              { label: 'settings', icon: Settings, color: 'bg-[hsl(var(--comic-purple))]', action: () => onNavigate('settings') },
+              { label: 'showAll', icon: ChevronRight, color: 'bg-[hsl(var(--comic-cyan))]', action: () => onNavigate('bills') },
+            ].map((link, i) => (
+              <button 
+                key={i} 
+                onClick={link.action}
+                className="flex flex-col items-center gap-1 p-2 border-2 border-black bg-[hsl(var(--comic-beige))] shadow-[1.5px_1.5px_0px_0px_#000] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
+              >
+                <div className={`w-8 h-8 border-2 border-black ${link.color} flex items-center justify-center shadow-[1px_1px_0px_0px_#000]`}>
+                  <link.icon className="h-4 w-4 text-black" />
                 </div>
-                <span className="text-xs font-medium text-foreground">{t('addTxn')}</span>
+                <span className="text-[7px] font-black uppercase tracking-widest text-center leading-none">
+                  {t(link.label)}
+                </span>
               </button>
-              <button onClick={() => onNavigate('reports')} className="quick-link-card">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                <span className="text-xs font-medium text-foreground">{t('saleReport')}</span>
-              </button>
-              <button onClick={() => onNavigate('items')} className="quick-link-card">
-                <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
-                  <Settings className="h-5 w-5 text-warning" />
-                </div>
-                <span className="text-xs font-medium text-foreground">{t('settings')}</span>
-              </button>
-              <button onClick={() => onNavigate('bills')} className="quick-link-card">
-                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <span className="text-xs font-medium text-foreground">{t('showAll')}</span>
-              </button>
-            </div>
+            ))}
           </div>
 
           {/* Search */}
-          <div className="section-card flex items-center gap-3 px-4 py-3">
-            <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          <div className="flex items-center gap-3 px-3 py-2 border-2 border-black bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000] mb-4">
+            <Search className="h-4 w-4 text-black/40" />
             <Input
               placeholder={t('searchTransaction')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="border-0 shadow-none focus-visible:ring-0 px-0 h-auto py-0 text-sm"
+              className="border-none shadow-none focus-visible:ring-0 p-0 h-auto text-[10px] font-black placeholder:text-black/20 bg-transparent"
             />
           </div>
 
@@ -210,37 +202,42 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </div>
             ) : (
               filteredBills.map((bill) => (
-                <div key={bill.id} className="transaction-card">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-semibold text-foreground">{bill.customer_name}</p>
-                      <span className="sale-badge mt-1">{t('sale')}</span>
+                <div key={bill.id} className="border-2 border-black p-3 bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000] relative overflow-hidden transition-all hover:bg-black/[0.02]">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-black text-black uppercase italic comic-text-stroke leading-none truncate pr-2">{bill.customer_name}</h3>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className="px-1.5 py-0.5 bg-[hsl(var(--comic-green))] border-2 border-black text-[6px] font-black uppercase italic tracking-widest text-black">
+                          {t('sale')}
+                        </span>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-muted-foreground">#{bill.bill_number}</p>
-                      <p className="text-xs text-muted-foreground">{formatDate(bill.created_at)}</p>
+                      <p className="text-[7px] font-black text-black/30 uppercase tracking-widest">#{bill.bill_number}</p>
+                      <p className="text-[7px] font-black text-black/40 uppercase tracking-widest mt-0.5">{formatDate(bill.created_at)}</p>
                     </div>
                   </div>
-                  <div className="flex items-end justify-between mt-3">
-                    <div className="flex gap-8">
+                  
+                  <div className="flex items-end justify-between pt-2 border-t-2 border-black border-dotted">
+                    <div className="flex gap-4">
                       <div>
-                        <p className="text-xs text-muted-foreground">{t('total')}</p>
-                        <p className="font-semibold text-foreground">₹ {bill.total_amount.toFixed(2)}</p>
+                        <p className="text-[6px] font-black text-black/30 uppercase tracking-wider mb-0.5">{t('total')}</p>
+                        <p className="text-sm font-black text-black font-mono leading-none italic">₹{bill.total_amount.toFixed(0)}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">{t('balance')}</p>
-                        <p className="font-semibold text-foreground">₹ {bill.total_amount.toFixed(2)}</p>
+                        <p className="text-[6px] font-black text-black/30 uppercase tracking-wider mb-0.5">{t('balance')}</p>
+                        <p className="text-sm font-black text-black font-mono leading-none italic">₹{bill.total_amount.toFixed(0)}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => handlePrint(bill)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
-                        <Printer className="h-4 w-4" />
+                    <div className="flex items-center gap-1.5">
+                      <button onClick={() => handlePrint(bill)} className="h-7 w-7 border-2 border-black bg-[hsl(var(--comic-yellow))] shadow-[1px_1px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
+                        <Printer className="h-3.5 w-3.5 text-black" />
                       </button>
-                      <button onClick={() => handleShare(bill)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
-                        <Share2 className="h-4 w-4" />
+                      <button onClick={() => handleShare(bill)} className="h-7 w-7 border-2 border-black bg-[hsl(var(--comic-cyan))] shadow-[1px_1px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
+                        <Share2 className="h-3.5 w-3.5 text-black" />
                       </button>
-                      <button onClick={() => onNavigate('bills')} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
-                        <MoreVertical className="h-4 w-4" />
+                      <button onClick={() => onNavigate('bills')} className="h-7 w-7 border-2 border-black bg-[hsl(var(--comic-pink))] shadow-[1px_1px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
+                        <MoreVertical className="h-3.5 w-3.5 text-black" />
                       </button>
                     </div>
                   </div>
@@ -253,30 +250,31 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
       {activeTab === 'parties' && (
         <div className="space-y-3">
-          <div className="section-card flex items-center gap-3 px-4 py-3">
-            <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          <div className="flex items-center bg-[hsl(var(--comic-beige))] border-2 border-black shadow-[2px_2px_0px_0px_#000] px-3 py-2">
+            <Search className="h-4 w-4 text-black/40" />
             <Input
               placeholder={t('searchParty')}
-              className="border-0 shadow-none focus-visible:ring-0 px-0 h-auto py-0 text-sm"
+              className="border-none shadow-none focus-visible:ring-0 text-[10px] font-black p-0 h-auto"
             />
           </div>
-          <Button onClick={() => onNavigate('customers')} className="w-full" variant="outline">
-            <Users className="h-4 w-4 mr-2" /> {t('viewAllCustomers')}
+          <Button onClick={() => onNavigate('customers')} className="w-full h-10 rounded-none border-2 border-black bg-[hsl(var(--comic-cyan))] shadow-[2px_2px_0px_0px_#000] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all">
+            <Users className="h-4 w-4 mr-2" /> <span className="text-[10px] font-black uppercase tracking-widest">{t('viewAllCustomers')}</span>
           </Button>
         </div>
       )}
 
       {/* Floating Add New Sale Button */}
-      <div className="fixed bottom-20 right-4 z-40">
-        <Button
-          onClick={() => onNavigate('billing')}
-          className="rounded-full shadow-lg px-6 h-12 bg-accent hover:bg-accent/90 text-accent-foreground"
-          size="mobile"
-        >
-          <Receipt className="h-5 w-5 mr-2" />
-          {t('addNewSale')}
-        </Button>
-      </div>
+      <Button 
+        onClick={() => onNavigate('billing')}
+        className="fixed bottom-20 right-4 h-10 px-4 rounded-none border-2 border-black bg-[hsl(var(--comic-pink))] shadow-[3px_3px_0px_0px_#000] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all z-40 group"
+      >
+        <div className="flex items-center gap-2">
+          <div className="p-1 border-2 border-black bg-[hsl(var(--comic-beige))] group-active:translate-x-0.5 group-active:translate-y-0.5 transition-all">
+            <Receipt className="h-3.5 w-3.5 text-black" />
+          </div>
+          <span className="font-black text-[8px] uppercase tracking-wider text-black italic">{t('addNewSale')}</span>
+        </div>
+      </Button>
     </div>
   );
 };

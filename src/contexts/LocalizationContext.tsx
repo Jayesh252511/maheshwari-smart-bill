@@ -118,10 +118,19 @@ const translations: Translations = {
   // Units
   patti: { en: 'Patti', hi: 'पत्ती', mr: 'पत्ती' },
   box: { en: 'Box', hi: 'डिब्बा', mr: 'बॉक्स' },
+  kg: { en: 'Kg', hi: 'किलो', mr: 'किलो' },
+  piece: { en: 'Piece', hi: 'पीस', mr: 'पीस' },
+  
+  // Status Labels
+  itemsAvailable: { en: 'Items Available', hi: 'वस्तुएं उपलब्ध', mr: 'वस्तू उपलब्ध' },
+  totalItems: { en: 'Total Items', hi: 'कुल वस्तुएं', mr: 'एकूण वस्तू' },
+  totalCustomers: { en: 'Total Customers', hi: 'कुल ग्राहक', mr: 'एकूण ग्राहक' },
+  noItemsFound: { en: 'No items found', hi: 'कोई वस्तु नहीं मिली', mr: 'कोणतीही वस्तू सापडली नाही' },
+  noCustomersFound: { en: 'No customers found', hi: 'कोई ग्राहक नहीं मिला', mr: 'कोणताही ग्राहक सापडला नाही' },
   
   // Business
-  maheshwariAgency: { en: 'MAHESHWARI AGENCY', hi: 'महेश्वरी एजेंसी', mr: 'माहेश्वरी एजन्सी' },
-  maheshwariAgencies: { en: 'MAHESHWARI AGENCIES', hi: 'महेश्वरी एजेंसी', mr: 'माहेश्वरी एजन्सी' },
+  maheshwariAgency: { en: 'DukanPay', hi: 'DukanPay', mr: 'DukanPay' },
+  maheshwariAgencies: { en: 'DukanPay', hi: 'DukanPay', mr: 'DukanPay' },
   thankYou: { en: 'Thank you for your business!', hi: 'आपके व्यापार के लिए धन्यवाद!', mr: 'आपल्या व्यवसायासाठी धन्यवाद!' },
   smartBillingSolution: { en: 'Smart Billing Solution', hi: 'स्मार्ट बिलिंग समाधान', mr: 'स्मार्ट बिलिंग सोल्यूशन' },
   
@@ -235,6 +244,28 @@ const translations: Translations = {
   pdf: { en: 'PDF', hi: 'PDF', mr: 'PDF' },
   share: { en: 'Share', hi: 'शेयर', mr: 'शेअर' },
   download: { en: 'Download', hi: 'डाउनलोड', mr: 'डाउनलोड' },
+  
+  // Navigation
+  home: { en: 'Home', hi: 'होम', mr: 'होम' },
+  dashboard: { en: 'History', hi: 'इतिहास', mr: 'इतिहास' },
+  menu: { en: 'More', hi: 'और', mr: 'आणखी' },
+  
+  // App Titles
+  maheshwariAgencies: { en: 'DukanPay', hi: 'DukanPay', mr: 'DukanPay' },
+  billsAndReports: { en: 'Bills & Reports', hi: 'बिल और रिपोर्ट', mr: 'बिल आणि रिपोर्ट' },
+  
+  // Settings Page
+  settings: { en: 'Settings', hi: 'सेटिंग्स', mr: 'सेटिंग्ज' },
+  manageYourPreferences: { en: 'Manage your preferences', hi: 'अपनी प्राथमिकताएं प्रबंधित करें', mr: 'तुमची प्राधान्ये व्यवस्थापित करा' },
+  profile: { en: 'Profile', hi: 'प्रोफ़ाइल', mr: 'प्रोफाइल' },
+  personalInfo: { en: 'Personal Info', hi: 'व्यक्तिगत जानकारी', mr: 'वैयक्तिक माहिती' },
+  businessDetails: { en: 'Business Details', hi: 'व्यापार विवरण', mr: 'व्यवसाय तपशील' },
+  preferences: { en: 'Preferences', hi: 'प्राथमिकताएं', mr: 'प्राधान्ये' },
+  language: { en: 'Language', hi: 'भाषा', mr: 'भाषा' },
+  notifications: { en: 'Notifications', hi: 'सूचनाएं', mr: 'सूचना' },
+  security: { en: 'Security', hi: 'सुरक्षा', mr: 'सुरक्षा' },
+  changePassword: { en: 'Change Password', hi: 'पासवर्ड बदलें', mr: 'पासवर्ड बदला' },
+  resetApp: { en: 'Reset App', hi: 'ऐप रीसेट करें', mr: 'अॅप रिसेट करा' },
 };
 
 interface LocalizationContextType {

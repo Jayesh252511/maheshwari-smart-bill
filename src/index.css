@@ -5,10 +5,10 @@
 @layer base {
   :root {
     /* Clean white/light blue theme inspired by Vyapar */
-    --background: 210 20% 98%;
+    --background: 40 40% 96%;
     --foreground: 220 20% 15%;
 
-    --card: 0 0% 100%;
+    --card: 40 30% 98%;
     --card-foreground: 220 20% 15%;
 
     --popover: 0 0% 100%;
@@ -45,7 +45,17 @@
     --input: 210 14% 89%;
     --ring: 210 80% 50%;
 
-    --radius: 0.625rem;
+    --radius: 0px;
+
+    /* GenZ Comic / Neubrutalism Palette (Vibrant but Balanced) */
+    --comic-yellow: 48 100% 67%;   /* Softer yellow */
+    --comic-cyan: 190 100% 70%;     /* Softer cyan */
+    --comic-pink: 330 100% 75%;     /* Aesthetic pink */
+    --comic-green: 150 100% 70%;    /* Fresh mint green */
+    --comic-orange: 25 100% 70%;    /* Peachy orange */
+    --comic-purple: 260 100% 75%;   /* Soft purple */
+    --comic-beige: 40 40% 96%;      /* Aesthetic beige */
+    --comic-black: 0 0% 0%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -123,6 +133,60 @@
 
   .section-card {
     @apply bg-card rounded-xl border border-border;
+  }
+
+  /* Comic Style Utilities */
+  .comic-border {
+    @apply border-2 border-black;
+  }
+
+  .comic-card {
+    @apply comic-border bg-[hsl(var(--comic-beige))] p-3 shadow-[2px_2px_0px_0px_#000];
+  }
+
+  .comic-shadow {
+    box-shadow: 2px 2px 0px 0px #000;
+  }
+
+  .comic-shadow-lg {
+    box-shadow: 3px 3px 0px 0px #000;
+  }
+
+  .comic-shadow-hover:hover {
+    box-shadow: 0px 0px 0px 0px #000;
+    transform: translate(2px, 2px);
+  }
+
+  .comic-button {
+    @apply comic-border comic-shadow font-black uppercase tracking-wider transition-all active:shadow-none active:translate-x-0.5 active:translate-y-0.5 text-[10px] py-2 px-4;
+  }
+
+  .comic-button-yellow { @apply comic-button bg-[hsl(var(--comic-yellow))] text-black; }
+  .comic-button-cyan { @apply comic-button bg-[hsl(var(--comic-cyan))] text-black; }
+  .comic-button-pink { @apply comic-button bg-[hsl(var(--comic-pink))] text-black; }
+  .comic-button-green { @apply comic-button bg-[hsl(var(--comic-green))] text-black; }
+  .comic-button-orange { @apply comic-button bg-[hsl(var(--comic-orange))] text-black; }
+
+  .comic-card {
+    @apply comic-border bg-[hsl(var(--comic-beige))] p-3 shadow-[2px_2px_0px_0px_#000];
+  }
+
+  .comic-input {
+    @apply border-4 border-black rounded-none focus:ring-0 focus:border-black font-bold;
+  }
+
+  .comic-text-stroke {
+    -webkit-text-stroke: 1px black;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-black/5;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-black rounded-none border-2 border-white;
   }
 }
 

@@ -10,6 +10,7 @@ import BillingSystem from '@/components/BillingSystem';
 import BillsHistory from '@/components/BillsHistory';
 import Reports from '@/components/Reports';
 import AICustomerSupport from '@/components/AICustomerSupport';
+import SettingsManager from '@/components/SettingsManager';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -27,10 +28,15 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{t('loading')}</p>
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--comic-beige))]">
+        <div className="text-center space-y-6">
+          <div className="w-20 h-20 bg-[hsl(var(--comic-yellow))] border-4 border-black shadow-[6px_6px_0px_0px_#000] flex items-center justify-center mx-auto animate-bounce">
+            <span className="font-black text-4xl italic">D</span>
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-black text-black tracking-tighter uppercase italic comic-text-stroke leading-none">DUKANPAY</h1>
+            <p className="text-[10px] font-black uppercase text-black/40 tracking-widest italic animate-pulse">{t('loading')}...</p>
+          </div>
         </div>
       </div>
     );
@@ -54,6 +60,8 @@ const Index = () => {
         return <Reports />;
       case 'ai-support':
         return <AICustomerSupport />;
+      case 'settings':
+        return <SettingsManager />;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
@@ -69,12 +77,14 @@ const Index = () => {
         return t('createBill');
       case 'bills':
         return t('billsAndReports');
+      case 'settings':
+        return t('settings');
       default:
         return t('maheshwariAgencies');
     }
   };
 
-  const showBackButton = ['billing', 'reports', 'ai-support'].includes(currentPage);
+  const showBackButton = ['billing', 'reports', 'ai-support', 'settings'].includes(currentPage);
 
   return (
     <Layout title={getPageTitle()} currentPage={currentPage} onNavigate={setCurrentPage}>

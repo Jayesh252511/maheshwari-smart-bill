@@ -116,200 +116,168 @@ const BillsHistory: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <>
       {/* Stats Row */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="section-card p-4">
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="border-2 border-black bg-[hsl(var(--comic-beige))] p-4 shadow-[2px_2px_0px_0px_#000]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Receipt className="h-5 w-5 text-primary" />
+            <div className="w-10 h-10 rounded-none border-2 border-black bg-black/5 flex items-center justify-center">
+              <Receipt className="h-5 w-5 text-black" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">{t('totalBills')}</p>
-              <p className="text-lg font-bold text-foreground">{bills.length}</p>
+              <p className="text-[10px] font-black text-black/40 uppercase tracking-widest leading-none mb-1">{t('totalBills')}</p>
+              <p className="text-xl font-black text-black font-mono leading-none italic">{bills.length}</p>
             </div>
           </div>
         </div>
-        <div className="section-card p-4">
+        <div className="border-2 border-black bg-[hsl(var(--comic-beige))] p-4 shadow-[2px_2px_0px_0px_#000]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
-              <span className="text-success font-bold text-sm">₹</span>
+            <div className="w-10 h-10 rounded-none border-2 border-black bg-[hsl(var(--comic-green))] flex items-center justify-center">
+              <span className="text-black font-black text-sm italic">₹</span>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">{t('revenue')}</p>
-              <p className="text-lg font-bold text-foreground">₹{getTotalRevenue().toFixed(0)}</p>
+              <p className="text-[10px] font-black text-black/40 uppercase tracking-widest leading-none mb-1">{t('revenue')}</p>
+              <p className="text-xl font-black text-black font-mono leading-none italic">₹{getTotalRevenue().toFixed(0)}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="section-card flex items-center gap-3 px-4 py-3">
-        <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-        <Input
-          placeholder={t('searchBills')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border-0 shadow-none focus-visible:ring-0 px-0 h-auto py-0 text-sm"
-        />
-      </div>
-
-      {/* Bills List */}
-      {filteredBills.length === 0 ? (
-        <div className="section-card flex flex-col items-center justify-center py-12">
-          <Receipt className="h-10 w-10 text-muted-foreground mb-3" />
-          <p className="text-sm font-medium text-foreground mb-1">
-            {bills.length === 0 ? t('noBillsYet') : t('noBillsFound')}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {bills.length === 0 ? t('createFirstBill') : t('tryAdjustingSearch')}
-          </p>
+      <div className="space-y-4 pb-20">
+        {/* Header */}
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h2 className="text-xl font-black text-black uppercase italic comic-text-stroke leading-none">{t('billsHistory')}</h2>
+          </div>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {filteredBills.map((bill) => (
-            <div key={bill.id} className="transaction-card" onClick={() => { setSelectedBill(bill); setDetailsOpen(true); }}>
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <p className="font-semibold text-foreground">{bill.customer_name}</p>
-                  <span className="sale-badge mt-1">{t('sale')}</span>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">#{bill.bill_number}</p>
-                  <p className="text-xs text-muted-foreground">{formatDate(bill.created_at)}</p>
-                </div>
-              </div>
-              <div className="flex items-end justify-between mt-3">
-                <div className="flex gap-8">
-                  <div>
-                    <p className="text-xs text-muted-foreground">{t('total')}</p>
-                    <p className="font-semibold text-foreground">₹ {bill.total_amount.toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">{t('balance')}</p>
-                    <p className="font-semibold text-foreground">₹ {bill.total_amount.toFixed(2)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                  <button onClick={() => handlePrintBill(bill)} className="p-2 text-muted-foreground hover:text-foreground">
-                    <Printer className="h-4 w-4" />
-                  </button>
-                  <button onClick={() => handleSharePDF(bill)} className="p-2 text-muted-foreground hover:text-foreground">
-                    <Share2 className="h-4 w-4" />
-                  </button>
-                  <button onClick={() => { setEditBill(bill); setEditOpen(true); }} className="p-2 text-muted-foreground hover:text-foreground">
-                    <MoreVertical className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
+
+        {/* Search */}
+        <div className="flex items-center gap-3 px-3 py-2 border-2 border-black bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000]">
+          <Search className="h-4 w-4 text-black/40" />
+          <Input 
+            placeholder={t('searchBills')} 
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border-none shadow-none focus-visible:ring-0 p-0 h-auto text-[10px] font-black placeholder:text-black/20 bg-transparent" 
+          />
+        </div>
+
+        {/* Bills List */}
+        <div className="space-y-2">
+          {filteredBills.length === 0 ? (
+            <div className="text-center py-12 border-2 border-black border-dashed bg-black/5 opacity-40">
+              <Receipt className="h-8 w-8 text-black/10 mx-auto mb-2" />
+              <p className="text-[10px] font-black text-black/30 uppercase italic">{t('noBillsFound')}</p>
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Bill Details Dialog */}
-      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t('saleTitle')}</DialogTitle>
-            <DialogDescription>{t('invoiceNo')} #{selectedBill?.bill_number}</DialogDescription>
-          </DialogHeader>
-          {selectedBill && (
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm">
-                <div>
-                  <p className="text-muted-foreground">{t('invoiceNo')}</p>
-                  <p className="font-medium">{selectedBill.bill_number}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-muted-foreground">{t('date')}</p>
-                  <p className="font-medium">{formatDate(selectedBill.created_at)}</p>
-                </div>
-              </div>
-
-              <div className="section-card p-3 space-y-2">
-                <div>
-                  <p className="text-xs text-muted-foreground">{t('customerName')}</p>
-                  <p className="font-medium">{selectedBill.customer_name}</p>
-                </div>
-                {selectedBill.customer_phone && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">{t('phone')}</p>
-                    <p className="font-medium">{selectedBill.customer_phone}</p>
+          ) : (
+            filteredBills.map((bill) => (
+              <div key={bill.id} className="border-2 border-black bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000] p-3 transition-all hover:bg-black/[0.02]" onClick={() => { setSelectedBill(bill); setDetailsOpen(true); }}>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-xs font-black text-black uppercase italic leading-none truncate pr-2">{bill.customer_name}</h3>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="text-[8px] font-black text-white bg-black px-1.5 py-0.5 uppercase tracking-widest leading-none italic">#{bill.bill_number}</span>
+                      <span className="text-[8px] font-black text-black/40 uppercase tracking-widest font-mono italic">{formatDate(bill.created_at)}</span>
+                    </div>
                   </div>
-                )}
-              </div>
-
-              {/* Billed Items */}
-              <div>
-                <div className="bg-success/10 text-success px-3 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 mb-3">
-                  <span>✓</span> {t('billedItems')}
+                  <div className="text-right">
+                    <p className="text-sm font-black text-black font-mono leading-none">₹{bill.total_amount.toFixed(0)}</p>
+                    <p className="text-[8px] font-black text-[hsl(var(--comic-green))] uppercase mt-1 italic tracking-widest">{t('completed')}</p>
+                  </div>
                 </div>
+                <div className="flex items-center justify-end gap-1.5 mt-3 pt-2 border-t border-black/10" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => handlePrintBill(bill)} className="h-8 w-8 border-2 border-black bg-[hsl(var(--comic-cyan))] shadow-[1.5px_1.5px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
+                    <Printer className="h-3.5 w-3.5 text-black" />
+                  </button>
+                  <button onClick={() => handleSharePDF(bill)} className="h-8 w-8 border-2 border-black bg-[hsl(var(--comic-yellow))] shadow-[1.5px_1.5px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
+                    <Share2 className="h-3.5 w-3.5 text-black" />
+                  </button>
+                  <button onClick={() => { setEditBill(bill); setEditOpen(true); }} className="h-8 w-8 border-2 border-black bg-[hsl(var(--comic-pink))] shadow-[1.5px_1.5px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
+                    <Edit className="h-3.5 w-3.5 text-black" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Bill Details Dialog */}
+        <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+          <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto border-4 border-black rounded-none shadow-[10px_10px_0px_0px_#000]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black uppercase italic comic-text-stroke tracking-tighter">{t('saleTitle')}</DialogTitle>
+              <DialogDescription className="font-black uppercase tracking-widest text-[9px] text-black/40 italic">{t('invoiceNo')} #{selectedBill?.bill_number}</DialogDescription>
+            </DialogHeader>
+            {selectedBill && (
+              <div className="space-y-6 pt-4">
+                <div className="flex justify-between items-end border-b-2 border-black border-dotted pb-4">
+                  <div>
+                    <p className="text-[8px] font-black uppercase text-black/30 mb-1">{t('customer')}</p>
+                    <p className="text-sm font-black text-black uppercase italic">{selectedBill.customer_name}</p>
+                    <p className="text-[9px] font-black text-black/50 font-mono mt-1">{selectedBill.customer_phone}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[8px] font-black uppercase text-black/30 mb-1">{t('date')}</p>
+                    <p className="text-xs font-black text-black font-mono">{formatDate(selectedBill.created_at)}</p>
+                  </div>
+                </div>
+
                 <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Package className="h-4 w-4" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">{t('billedItems')}</span>
+                  </div>
                   {selectedBill.items.map((item, index) => (
-                    <div key={index} className="section-card p-3">
+                    <div key={index} className="border-2 border-black p-3 bg-[hsl(var(--comic-yellow))] shadow-[2px_2px_0px_0px_#000]">
                       <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">#{index + 1}</span>
-                            <span className="font-medium">{item.item_name}</span>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {t('itemSubtotal')}: {item.quantity} x {item.unit_price} = ₹ {item.total_price.toFixed(2)}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-black uppercase italic truncate pr-2">{item.item_name}</p>
+                          <p className="text-[8px] font-black text-black/40 uppercase mt-1">
+                            {item.quantity} x ₹{item.unit_price}
                           </p>
                         </div>
-                        <p className="font-semibold">₹ {item.total_price.toFixed(0)}</p>
+                        <p className="text-xs font-black text-black font-mono italic">₹{item.total_price.toFixed(0)}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
 
-              {/* Totals */}
-              <div className="border-t pt-3 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>{t('subtotal')}</span>
-                  <span>₹ {selectedBill.subtotal.toFixed(2)}</span>
-                </div>
-                {selectedBill.tax_amount > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span>{t('tax')}</span>
-                    <span>₹ {selectedBill.tax_amount.toFixed(2)}</span>
+                <div className="pt-6 border-t-4 border-black space-y-2">
+                  <div className="flex justify-between text-xs font-black uppercase tracking-widest text-black/50">
+                    <span>{t('subtotal')}</span>
+                    <span className="font-mono">₹{selectedBill.subtotal.toFixed(2)}</span>
                   </div>
-                )}
-                <div className="flex justify-between font-bold text-lg border-t pt-2">
-                  <span>{t('total')}</span>
-                  <span>₹ {selectedBill.total_amount.toFixed(2)}</span>
+                  {selectedBill.tax_amount > 0 && (
+                    <div className="flex justify-between text-xs font-black uppercase tracking-widest text-black/50">
+                      <span>{t('tax')}</span>
+                      <span className="font-mono">₹{selectedBill.tax_amount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center bg-black text-white p-4 italic mt-4">
+                    <span className="text-sm font-black uppercase tracking-widest">{t('total')}</span>
+                    <span className="text-2xl font-black font-mono">₹{selectedBill.total_amount.toFixed(0)}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-4">
+                  <Button variant="ghost" onClick={() => handleDeleteBill(selectedBill.id)} className="border-2 border-black rounded-none text-destructive font-black uppercase text-[10px] italic shadow-[3px_3px_0px_0px_#000] active:shadow-none transition-all">
+                    <Trash2 className="h-4 w-4 mr-2" /> {t('delete')}
+                  </Button>
+                  <Button onClick={() => { setEditBill(selectedBill); setEditOpen(true); setDetailsOpen(false); }} className="border-2 border-black bg-[hsl(var(--comic-pink))] text-black font-black uppercase text-[10px] italic shadow-[3px_3px_0px_0px_#000] active:shadow-none transition-all">
+                    <Edit className="h-4 w-4 mr-2" /> {t('edit')}
+                  </Button>
                 </div>
               </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
-              {/* Actions */}
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <Button variant="outline" onClick={() => handleDeleteBill(selectedBill.id)} className="text-destructive">
-                  <Trash2 className="h-4 w-4 mr-1" /> {t('delete')}
-                </Button>
-                <Button onClick={() => { setEditBill(selectedBill); setEditOpen(true); setDetailsOpen(false); }}>
-                  <Edit className="h-4 w-4 mr-1" /> {t('edit')}
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" onClick={() => handleDownloadPDF(selectedBill)}>
-                  <Download className="h-4 w-4 mr-1" /> {t('pdf')}
-                </Button>
-                <Button variant="outline" onClick={() => handlePrintBill(selectedBill)}>
-                  <Printer className="h-4 w-4 mr-1" /> {t('print')}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {editBill && (
-        <BillEdit bill={editBill} open={editOpen} onOpenChange={setEditOpen}
-          onBillUpdated={() => { fetchBills(); setEditBill(null); }} />
-      )}
-    </div>
+        {editBill && (
+          <BillEdit bill={editBill} open={editOpen} onOpenChange={setEditOpen}
+            onBillUpdated={() => { fetchBills(); setEditBill(null); }} />
+        )}
+      </div>
+    </>
   );
 };
 

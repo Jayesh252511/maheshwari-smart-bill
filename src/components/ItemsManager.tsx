@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Package, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Package, Search, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocalization } from '@/contexts/LocalizationContext';
@@ -41,7 +40,13 @@ const ItemsManager: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const itemData = { name: formData.name.trim(), price: parseFloat(formData.price), unit: formData.unit, stock: 999, user_id: user?.id };
+      const itemData = { 
+        name: formData.name.trim(), 
+        price: parseFloat(formData.price), 
+        unit: formData.unit, 
+        stock: 999, 
+        user_id: user?.id 
+      };
       if (editingItem) {
         const { error } = await supabase.from('items').update(itemData).eq('id', editingItem.id);
         if (error) throw error;
@@ -74,53 +79,57 @@ const ItemsManager: React.FC = () => {
   const filteredItems = items.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   if (loading) {
-    return <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />)}</div>;
+    return <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-14 border-2 border-black bg-[hsl(var(--comic-beige))] animate-pulse" />)}</div>;
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 pb-20">
+      <div className="flex items-center justify-between px-1">
         <div>
-          <h2 className="text-lg font-bold text-foreground">{t('items')}</h2>
-          <p className="text-xs text-muted-foreground">{items.length} {t('items').toLowerCase()}</p>
+          <h2 className="text-xl font-black text-black uppercase italic comic-text-stroke leading-none">{t('items')}</h2>
+          <p className="text-[10px] font-black text-black/30 uppercase tracking-widest mt-1 italic">{items.length} {t('totalItems')}</p>
         </div>
-        <Button onClick={() => { setEditingItem(null); setFormData({ name: '', price: '', unit: 'patti' }); setDialogOpen(true); }} size="sm">
-          <Plus className="h-4 w-4 mr-1" /> {t('addItem')}
+        <Button 
+          onClick={() => { setEditingItem(null); setFormData({ name: '', price: '', unit: 'patti' }); setDialogOpen(true); }} 
+          className="h-10 border-2 border-black bg-[hsl(var(--comic-pink))] shadow-[2px_2px_0px_0px_#000] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
+        >
+          <Plus className="h-4 w-4 mr-1 text-black stroke-[3px]" /> 
+          <span className="font-black text-[10px] uppercase tracking-wider text-black">{t('add')}</span>
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="section-card flex items-center gap-3 px-4 py-3">
-        <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-        <Input placeholder={t('searchItems')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-          className="border-0 shadow-none focus-visible:ring-0 px-0 h-auto py-0 text-sm" />
+      <div className="flex items-center gap-3 px-3 py-2 border-2 border-black bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000]">
+        <Search className="h-4 w-4 text-black/40" />
+        <Input 
+          placeholder={t('searchItems')} 
+          value={searchTerm} 
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border-none shadow-none focus-visible:ring-0 p-0 h-auto text-[10px] font-black placeholder:text-black/20 bg-transparent" 
+        />
       </div>
 
-      {/* Items List */}
       {filteredItems.length === 0 ? (
-        <div className="section-card flex flex-col items-center justify-center py-12">
-          <Package className="h-10 w-10 text-muted-foreground mb-3" />
-          <p className="text-sm font-medium text-foreground mb-1">{t('noItems')}</p>
-          <p className="text-xs text-muted-foreground mb-3">{t('addYourFirstItem')}</p>
-          <Button onClick={() => setDialogOpen(true)} size="sm">
-            <Plus className="h-4 w-4 mr-1" /> {t('addItem')}
-          </Button>
+        <div className="border-2 border-black border-dashed bg-black/5 p-12 text-center">
+          <Package className="h-10 w-10 text-black/10 mx-auto mb-3" />
+          <p className="text-[10px] font-black text-black/30 uppercase italic">{t('noItemsFound')}</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {filteredItems.map((item) => (
-            <div key={item.id} className="section-card p-4 flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">{item.name}</p>
-                <p className="text-sm text-muted-foreground">₹{item.price.toFixed(2)} / {item.unit === 'patti' ? t('patti') : item.unit === 'box' ? t('box') : item.unit}</p>
+            <div key={item.id} className="border-2 border-black p-3 bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000] relative overflow-hidden flex items-center justify-between group">
+              <div className="min-w-0 flex-1">
+                <h3 className="text-xs font-black text-black uppercase italic comic-text-stroke leading-none truncate pr-2">{item.name}</h3>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-[10px] font-black font-mono">₹{item.price.toFixed(0)}</span>
+                  <span className="text-[8px] font-black text-black/40 uppercase tracking-widest italic bg-black/5 px-1.5 py-0.5 border-2 border-black border-dotted">/{item.unit}</span>
+                </div>
               </div>
-              <div className="flex gap-1">
-                <button onClick={() => handleEdit(item)} className="p-2 text-muted-foreground hover:text-primary">
-                  <Edit className="h-4 w-4" />
+              <div className="flex gap-1.5 ml-2">
+                <button onClick={() => handleEdit(item)} className="h-8 w-8 border-2 border-black bg-[hsl(var(--comic-yellow))] shadow-[1.5px_1.5px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
+                  <Edit className="h-3.5 w-3.5 text-black" />
                 </button>
-                <button onClick={() => handleDelete(item.id)} className="p-2 text-muted-foreground hover:text-destructive">
-                  <Trash2 className="h-4 w-4" />
+                <button onClick={() => handleDelete(item.id)} className="h-8 w-8 border-2 border-black bg-[hsl(var(--comic-pink))] shadow-[1.5px_1.5px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
+                  <Trash2 className="h-3.5 w-3.5 text-black" />
                 </button>
               </div>
             </div>
@@ -128,35 +137,66 @@ const ItemsManager: React.FC = () => {
         </div>
       )}
 
-      {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingItem ? t('editItem') : t('addNewItem')}</DialogTitle>
-            <DialogDescription>{editingItem ? t('updateItemDetails') : t('enterItemDetails')}</DialogDescription>
+        <DialogContent className="sm:max-w-md border-4 border-black rounded-none shadow-[8px_8px_0px_0px_#000] p-0 overflow-hidden">
+          <DialogHeader className="bg-black text-white p-4 italic">
+            <DialogTitle className="text-xl font-black uppercase tracking-tighter italic leading-none">
+              {editingItem ? t('editItem') : t('addItem')}
+            </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="p-6 space-y-5 bg-[hsl(var(--comic-beige))]">
             <div className="space-y-2">
-              <Label>{t('itemName')}</Label>
-              <Input value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} placeholder={t('enterItemName')} required />
+              <Label className="text-[10px] font-black uppercase text-black/40 tracking-widest">{t('itemName')}</Label>
+              <Input 
+                value={formData.name} 
+                onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))} 
+                placeholder={t('itemName')} 
+                required 
+                className="h-12 border-2 border-black rounded-none font-black text-xs shadow-[2px_2px_0px_0px_#000] focus-visible:ring-0"
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{t('ratePerUnit')}</Label>
-                <Input type="number" step="0.01" value={formData.price} onChange={(e) => setFormData(p => ({ ...p, price: e.target.value }))} placeholder="0.00" required />
+                <Label className="text-[10px] font-black uppercase text-black/40 tracking-widest">{t('price')}</Label>
+                <Input 
+                  type="number" 
+                  step="0.01"
+                  value={formData.price} 
+                  onChange={(e) => setFormData(p => ({ ...p, price: e.target.value }))} 
+                  placeholder="0.00" 
+                  required
+                  className="h-12 border-2 border-black rounded-none font-black text-xs shadow-[2px_2px_0px_0px_#000] focus-visible:ring-0"
+                />
               </div>
               <div className="space-y-2">
-                <Label>{t('unit')}</Label>
-                <select value={formData.unit} onChange={(e) => setFormData(p => ({ ...p, unit: e.target.value }))}
-                  className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <Label className="text-[10px] font-black uppercase text-black/40 tracking-widest">{t('unit')}</Label>
+                <select 
+                  value={formData.unit} 
+                  onChange={(e) => setFormData(p => ({ ...p, unit: e.target.value }))}
+                  className="w-full h-12 border-2 border-black bg-[hsl(var(--comic-beige))] rounded-none font-black text-xs shadow-[2px_2px_0px_0px_#000] focus:ring-0 px-3 outline-none"
+                >
                   <option value="patti">{t('patti')}</option>
                   <option value="box">{t('box')}</option>
+                  <option value="kg">{t('kg')}</option>
+                  <option value="piece">{t('piece')}</option>
                 </select>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button type="submit" className="flex-1">{editingItem ? t('update') : t('addItem')}</Button>
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t('cancel')}</Button>
+            <div className="flex gap-3 pt-2">
+              <Button 
+                type="submit" 
+                className="flex-1 h-12 border-2 border-black bg-[hsl(var(--comic-green))] text-black font-black uppercase text-xs italic tracking-widest shadow-[4px_4px_0px_0px_#000] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
+              >
+                {editingItem ? t('update') : t('save')}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setDialogOpen(false)}
+                className="flex-1 h-12 border-2 border-black bg-[hsl(var(--comic-beige))] text-black font-black uppercase text-xs italic tracking-widest shadow-[4px_4px_0px_0px_#000] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
+              >
+                {t('cancel')}
+              </Button>
             </div>
           </form>
         </DialogContent>

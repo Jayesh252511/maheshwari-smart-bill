@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Minus, Trash2, Receipt, Download, Share, Bluetooth, X, Search } from 'lucide-react';
+import { Plus, Minus, Trash2, Receipt, Download, Share, Bluetooth, X, Search, Package, ShoppingCart, Users, Loader2, Share2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -12,7 +12,6 @@ import { bluetoothPrinter } from '@/utils/bluetoothPrinter';
 import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill, BillItem, Customer, Item } from '@/types/bill';
 import { useLocalization } from '@/contexts/LocalizationContext';
-
 
 const BillingSystem: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -29,6 +28,7 @@ const BillingSystem: React.FC = () => {
   const [printerConnected, setPrinterConnected] = useState(false);
   const [itemSearch, setItemSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { t } = useLocalization();
@@ -58,25 +58,6 @@ const BillingSystem: React.FC = () => {
     return items.filter(i => i.name.toLowerCase().includes(q));
   }, [items, itemSearch]);
 
-  const showDropdown = showSuggestions && filteredItems.length > 0;
-
-  // Close suggestions on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const selectItemFromSearch = (item: Item) => {
-    setSelectedItem(item.id);
-    setItemSearch(item.name);
-    setShowSuggestions(false);
-  };
-
   const addItemToBill = () => {
     if (!selectedItem) { toast.error(t('selectAnItem')); return; }
     const item = items.find(i => i.id === selectedItem);
@@ -104,12 +85,6 @@ const BillingSystem: React.FC = () => {
     if (newQuantity <= 0) { removeItemFromBill(itemId); return; }
     setBillItems(prev => prev.map(bi =>
       bi.item_id === itemId ? { ...bi, quantity: newQuantity, total_price: newQuantity * bi.unit_price } : bi
-    ));
-  };
-
-  const updateItemRate = (itemId: string, newRate: number) => {
-    setBillItems(prev => prev.map(bi =>
-      bi.item_id === itemId ? { ...bi, unit_price: newRate, total_price: bi.quantity * newRate } : bi
     ));
   };
 
@@ -219,300 +194,188 @@ const BillingSystem: React.FC = () => {
   const { subtotal, taxAmount, total } = calculateTotals();
   const selectedCustomerData = customers.find(c => c.id === selectedCustomer);
 
-  if (loading) {
-    return <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-20 bg-muted rounded-xl animate-pulse" />)}</div>;
-  }
-
   return (
-    <div className="space-y-3 pb-4">
-      {/* Sale Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-foreground">{t('saleTitle')}</h2>
-        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-          printerConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'
-        }`}>
-          <Bluetooth className="h-3 w-3" />
-          {printerConnected ? t('connected') : t('disconnected')}
-        </div>
-      </div>
-
-      {/* Customer Section */}
-      <div className="bg-card rounded-lg border border-border p-3 space-y-2">
-        <Label className="text-xs font-medium text-muted-foreground">{t('customer')} *</Label>
-        <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
-          <SelectTrigger className="h-11">
-            <SelectValue placeholder={t('selectCustomer')} />
-          </SelectTrigger>
-          <SelectContent>
-            {customers.map(c => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}{c.phone ? ` • ${c.phone}` : ''}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {selectedCustomerData?.phone && (
-          <p className="text-xs text-muted-foreground">📞 {selectedCustomerData.phone}</p>
-        )}
-      </div>
-
-      {/* Add Items Section */}
-      <div className="bg-card rounded-lg border border-border p-3 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-foreground text-sm">{t('addItems')}</h3>
-          <span className="text-xs text-muted-foreground">{filteredItems.length} {t('items') || 'items'}</span>
-        </div>
-
-        {/* Search bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={t('searchItemsPlaceholder')}
-            value={itemSearch}
-            onChange={(e) => setItemSearch(e.target.value)}
-            className="h-10 pl-9 text-sm"
-          />
-        </div>
-
-        {/* Product grid - scrollable, tap to select */}
-        {filteredItems.length === 0 ? (
-          <div className="py-6 text-center text-sm text-muted-foreground">{t('noItemsFound')}</div>
-        ) : (
-          <div className="max-h-[280px] overflow-y-auto -mx-1 px-1 pb-1">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {filteredItems.map((item, idx) => {
-                const isSelected = selectedItem === item.id;
-                const inBill = billItems.find(bi => bi.item_id === item.id);
-                const isAlt = idx % 2 === 1;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => selectItemFromSearch(item)}
-                    className={`relative text-left rounded-lg border p-2.5 transition-all active:scale-[0.97] flex flex-col gap-1 min-h-[78px] ${
-                      isSelected
-                        ? 'border-primary bg-primary/15 ring-2 ring-primary/30'
-                        : isAlt
-                          ? 'border-border bg-accent/40 hover:border-primary/50 hover:bg-accent/60'
-                          : 'border-border bg-background hover:border-primary/50 hover:bg-accent/30'
-                    }`}
-                  >
-                    {inBill && (
-                      <span className="absolute top-1 right-1 bg-success text-success-foreground text-[10px] font-bold rounded-full h-5 min-w-5 px-1 flex items-center justify-center">
-                        {inBill.quantity}
-                      </span>
-                    )}
-                    <span className="font-bold text-foreground text-xs leading-tight line-clamp-2 pr-5">
-                      {item.name}
-                    </span>
-                    <span className="text-[11px] text-primary font-semibold mt-auto">
-                      ₹{item.price}<span className="text-muted-foreground font-normal">/{item.unit}</span>
-                    </span>
-                  </button>
-                );
-              })}
+    <>
+      <div className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto pb-24 lg:pb-8">
+        {/* Sale Header */}
+        <div className="flex items-center justify-between px-1 mb-6">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => window.history.back()}
+              className="flex items-center gap-2 text-black hover:bg-black/5 border-2 border-black shadow-[2px_2px_0px_0px_#000] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all h-10 px-4"
+            >
+              <Plus className="h-4 w-4 rotate-45 stroke-[3px]" />
+              <span className="font-black text-[10px] uppercase tracking-wider">{t('back')}</span>
+            </Button>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-black tracking-tighter flex items-center gap-2 italic uppercase comic-text-stroke leading-tight">
+                {t('saleTitle')}
+              </h2>
             </div>
           </div>
-        )}
+          
+          <div className={`flex items-center gap-2 px-4 py-2 border-2 border-black font-black uppercase tracking-wider transition-all shadow-[3px_3px_0px_0px_#000] text-[10px] ${
+            printerConnected 
+              ? 'bg-[hsl(var(--comic-green))] text-black' 
+              : 'bg-[hsl(var(--comic-beige))] text-black/40'
+          }`}>
+            <Bluetooth className="h-4 w-4" />
+            <span className="hidden sm:inline">{printerConnected ? t('connected') : t('disconnected')}</span>
+          </div>
+        </div>
 
-        {/* Selected item + Swipe-to-adjust + Add */}
-        {selectedItem && (() => {
-          const selItem = items.find(i => i.id === selectedItem);
-          let touchStartX = 0;
-          let touchStartY = 0;
-          let lastStep = 0;
-          const STEP_PX = 40;
-          const onTouchStart = (e: React.TouchEvent) => {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            lastStep = 0;
-          };
-          const onTouchMove = (e: React.TouchEvent) => {
-            const dx = e.touches[0].clientX - touchStartX;
-            const dy = e.touches[0].clientY - touchStartY;
-            if (Math.abs(dx) < Math.abs(dy)) return;
-            const step = Math.trunc(dx / STEP_PX);
-            if (step !== lastStep) {
-              const delta = step - lastStep;
-              setQuantity(prev => String(Math.max(0, (parseInt(prev) || 0) + delta)));
-              lastStep = step;
-              if (navigator.vibrate) navigator.vibrate(10);
-            }
-          };
-          return (
-            <div className="space-y-2 pt-1 border-t border-dashed border-border">
-              <div
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                className="relative bg-primary/5 border border-primary/20 rounded-lg px-3 py-3 select-none touch-pan-y overflow-hidden"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-primary font-bold uppercase">{t('selected')}</span>
-                    </div>
-                    <div className="text-sm font-bold text-foreground truncate">{selItem?.name}</div>
-                  </div>
-                  <div className="text-2xl font-bold text-primary tabular-nums min-w-[2.5rem] text-center">
-                    {quantity || 0}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between mt-1.5 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-0.5">← {t('swipeLeft') || 'swipe to decrease'}</span>
-                  <span className="flex items-center gap-0.5">{t('swipeRight') || 'swipe to increase'} →</span>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Customer Selection */}
+            <div className="comic-card bg-[hsl(var(--comic-beige))] p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-black" />
+                  <span className="text-[10px] font-black uppercase tracking-widest italic">{t('customer')} *</span>
                 </div>
               </div>
-              <div className="flex gap-2 items-end">
-                <div className="flex-1">
-                  <Label className="text-xs text-muted-foreground">{t('qty')}</Label>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0"
-                      onClick={() => setQuantity(String(Math.max(0, (parseInt(quantity) || 0) - 1)))}>
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)}
-                      placeholder="0" min="0"
-                      className="h-10 text-center text-sm font-bold bg-primary/5 border-primary/30" />
-                    <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0"
-                      onClick={() => setQuantity(String((parseInt(quantity) || 0) + 1))}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Select value={selectedCustomer || ""} onValueChange={setSelectedCustomer}>
+                    <SelectTrigger className="h-10 border-2 border-black rounded-none font-black text-xs focus:ring-0 shadow-[2px_2px_0px_0px_#000] bg-[hsl(var(--comic-beige))]">
+                      <SelectValue placeholder={t('selectCustomer')} />
+                    </SelectTrigger>
+                    <SelectContent className="border-2 border-black rounded-none">
+                      <SelectItem value="walkin" className="font-black text-xs uppercase">{t('walkinCustomer')}</SelectItem>
+                      {customers.map((c) => (
+                        <SelectItem key={c.id} value={c.id} className="font-black text-xs uppercase">{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Button onClick={addItemToBill} className="h-10 px-4">
-                  <Plus className="h-4 w-4 mr-1" /> {t('add')}
+                <Button onClick={() => setShowAddCustomer(true)} className="h-10 w-10 border-2 border-black bg-[hsl(var(--comic-cyan))] shadow-[2px_2px_0px_0px_#000] active:shadow-none p-0 flex items-center justify-center">
+                  <Plus className="h-5 w-5 text-black stroke-[3px]" />
                 </Button>
               </div>
             </div>
-          );
-        })()}
+
+            {/* Items Grid */}
+            <div className="comic-card bg-[hsl(var(--comic-beige))] p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-black" />
+                  <h3 className="text-xs font-black text-black uppercase italic tracking-tighter leading-none">{t('addItems')}</h3>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 px-3 py-2 border-2 border-black bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000] mb-4">
+                <Search className="h-4 w-4 text-black/40" />
+                <Input 
+                  placeholder={t('searchItems')} 
+                  value={itemSearch} 
+                  onChange={(e) => setItemSearch(e.target.value)}
+                  className="border-none shadow-none focus-visible:ring-0 p-0 h-auto text-[10px] font-black placeholder:text-black/20 bg-transparent"
+                />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-[400px] overflow-y-auto pr-1 comic-scrollbar">
+                {filteredItems.map((item) => {
+                  const inBill = billItems.find(bi => bi.item_id === item.id);
+                  const qty = inBill?.quantity || 0;
+                  return (
+                    <div key={item.id} className={`group relative border-2 border-black p-2.5 transition-all flex flex-col justify-between ${qty > 0 ? 'bg-[hsl(var(--comic-pink))] translate-x-0.5 translate-y-0.5' : 'bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000]'}`}>
+                      <div onClick={() => { if (!inBill) setBillItems([...billItems, { id: Date.now().toString(), item_id: item.id, item_name: item.name, quantity: 1, unit_price: item.price, total_price: item.price, unit: item.unit }]); }} className="cursor-pointer">
+                        <h4 className="text-[10px] font-black text-black uppercase italic leading-tight line-clamp-2">{item.name}</h4>
+                        <p className="text-[8px] font-black text-black/40 mt-1 uppercase tracking-widest">₹{item.price.toFixed(0)}/{item.unit}</p>
+                      </div>
+                      <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-black/10">
+                        {qty > 0 ? (
+                          <div className="flex items-center justify-between w-full">
+                            <button onClick={() => updateItemQuantity(item.id, qty - 1)} className="h-6 w-6 border-2 border-black bg-[hsl(var(--comic-beige))] flex items-center justify-center shadow-[1px_1px_0px_0px_#000]"><Minus className="h-3 w-3 text-black" /></button>
+                            <span className="text-[10px] font-black font-mono">{qty}</span>
+                            <button onClick={() => updateItemQuantity(item.id, qty + 1)} className="h-6 w-6 border-2 border-black bg-[hsl(var(--comic-beige))] flex items-center justify-center shadow-[1px_1px_0px_0px_#000]"><Plus className="h-3 w-3 text-black" /></button>
+                          </div>
+                        ) : (
+                          <button onClick={() => setBillItems([...billItems, { id: Date.now().toString(), item_id: item.id, item_name: item.name, quantity: 1, unit_price: item.price, total_price: item.price, unit: item.unit }])} className="w-full py-1 border-2 border-black bg-[hsl(var(--comic-yellow))] text-[8px] font-black uppercase shadow-[1.5px_1.5px_0px_0px_#000]">{t('add')}</button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Cart Summary */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="comic-card bg-[hsl(var(--comic-beige))] p-4 space-y-4 border-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Receipt className="h-5 w-5 text-black" />
+                <h3 className="text-sm font-black text-black uppercase italic tracking-tighter leading-none">{t('billSummary')}</h3>
+              </div>
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 comic-scrollbar">
+                {billItems.length === 0 ? (
+                  <div className="text-center py-10 border-2 border-black border-dashed bg-black/5 opacity-40">
+                    <p className="text-[10px] font-black uppercase italic">{t('noItemsInBill')}</p>
+                  </div>
+                ) : (
+                  billItems.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center gap-3 p-2 border-2 border-black bg-[hsl(var(--comic-yellow))] shadow-[2px_2px_0px_0px_#000]">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-black uppercase truncate leading-none mb-1">{item.item_name}</p>
+                        <p className="text-[8px] font-black text-black/40 uppercase">₹{item.unit_price} x {item.quantity}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] font-black font-mono italic leading-none mb-1">₹{item.total_price.toFixed(0)}</p>
+                        <button onClick={() => setBillItems(billItems.filter(bi => bi.id !== item.id))} className="text-[8px] font-black text-black/30 uppercase hover:text-black underline">{t('remove')}</button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="pt-4 border-t-4 border-black space-y-2">
+                <div className="flex justify-between text-xs font-black uppercase">
+                  <span>{t('subtotal')}</span>
+                  <span className="font-mono">₹{subtotal.toFixed(0)}</span>
+                </div>
+                <div className="flex justify-between text-sm font-black uppercase bg-black text-white p-2">
+                  <span>{t('total')}</span>
+                  <span className="text-xl font-mono">₹{total.toFixed(0)}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <Button variant="ghost" onClick={resetBill} disabled={billItems.length === 0} className="h-10 border-2 border-black rounded-none font-black text-[10px] uppercase">{t('clear')}</Button>
+                  <Button onClick={handleCheckout} disabled={saving || billItems.length === 0 || !selectedCustomer} className="h-10 border-2 border-black rounded-none font-black text-[10px] uppercase bg-[hsl(var(--comic-green))] shadow-[2px_2px_0px_0px_#000]">{t('generateBill')}</Button>
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 p-2 bg-[hsl(var(--comic-yellow))] border-2 border-black text-center">
+              <p className="text-[7px] font-black uppercase tracking-widest leading-none italic">{t('fastBillingNote')}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Billed Items */}
-      {billItems.length > 0 && (
-        <div className="space-y-2">
-          <div className="bg-success/10 text-success px-3 py-2 rounded-lg text-sm font-bold flex items-center justify-between">
-            <span>✓ {t('billedItems')} ({billItems.length})</span>
-          </div>
-
-          {billItems.map((item, index) => (
-            <div key={item.id} className="bg-card rounded-lg border border-border p-3">
-              {/* Item name and total */}
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">#{index + 1}</span>
-                  <span className="font-bold text-foreground text-sm truncate">{item.item_name}</span>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="font-bold text-sm">₹{item.total_price.toFixed(0)}</span>
-                  <button onClick={() => removeItemFromBill(item.item_id)} className="p-1 text-destructive hover:bg-destructive/10 rounded">
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Quantity and Rate row */}
-              <div className="flex items-center gap-3 flex-wrap">
-                {/* Quantity controls */}
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground mr-1">{t('qty')}:</span>
-                  <Button variant="outline" size="icon" className="h-7 w-7"
-                    onClick={() => updateItemQuantity(item.item_id, item.quantity - 1)}>
-                    <Minus className="h-3 w-3" />
-                  </Button>
-                  <span className="w-8 text-center text-sm font-bold bg-muted rounded px-1 py-0.5">{item.quantity}</span>
-                  <Button variant="outline" size="icon" className="h-7 w-7"
-                    onClick={() => updateItemQuantity(item.item_id, item.quantity + 1)}>
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                </div>
-
-                {/* Editable Rate */}
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">{t('rate')}:</span>
-                  <Input
-                    type="number"
-                    value={item.unit_price}
-                    onChange={(e) => updateItemRate(item.item_id, parseFloat(e.target.value) || 0)}
-                    className="h-7 w-20 text-sm text-center"
-                    min="0"
-                  />
-                </div>
-
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {item.quantity} × ₹{item.unit_price} = ₹{item.total_price.toFixed(0)}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Totals */}
-      {billItems.length > 0 && (
-        <div className="bg-card rounded-lg border border-border p-3 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t('subtotal')}</span>
-            <span>₹{subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">{t('taxPercent')}</span>
-            <div className="flex items-center gap-2">
-              <Input type="number" value={taxRate} onChange={(e) => setTaxRate(e.target.value)}
-                className="w-14 h-7 text-center text-sm" min="0" max="100" step="0.1" />
-              <span className="text-muted-foreground text-xs">₹{taxAmount.toFixed(2)}</span>
-            </div>
-          </div>
-          <div className="flex justify-between font-bold text-base border-t border-dashed pt-2">
-            <span>{t('total')}:</span>
-            <span>₹{total.toFixed(2)}</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <Button variant="outline" onClick={resetBill} size="sm">{t('clear')}</Button>
-            <Button onClick={handleCheckout} disabled={saving || billItems.length === 0} size="sm">
-              <Receipt className="h-4 w-4 mr-1" />
-              {saving ? t('saving') : t('saveBill')}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {billItems.length === 0 && (
-        <div className="bg-card rounded-lg border border-border flex flex-col items-center justify-center py-10">
-          <Receipt className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm font-medium text-foreground">{t('noItemsAdded')}</p>
-          <p className="text-xs text-muted-foreground">{t('selectCustomerAndAddItems')}</p>
-        </div>
-      )}
-
-
-      {/* Print Dialog */}
       <Dialog open={printDialogOpen} onOpenChange={setPrintDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('billCreated')}</DialogTitle>
-            <DialogDescription>{t('chooseHowToShare')}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Button onClick={handlePrint} className="w-full" size="mobile">
-              <Bluetooth className="h-4 w-4 mr-2" /> {t('printReceipt')}
-            </Button>
-            <Button onClick={handleDownloadPDF} variant="outline" className="w-full" size="mobile">
-              <Download className="h-4 w-4 mr-2" /> {t('downloadPDF')}
-            </Button>
-            {navigator.share && (
-              <Button onClick={handleSharePDF} variant="outline" className="w-full" size="mobile">
-                <Share className="h-4 w-4 mr-2" /> {t('sharePDF')}
-              </Button>
-            )}
-            <Button onClick={() => { resetBill(); setPrintDialogOpen(false); }} variant="secondary" className="w-full">
-              {t('createAnotherBill')}
-            </Button>
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden border-4 border-black rounded-none shadow-[12px_12px_0px_0px_#000] bg-[hsl(var(--comic-beige))]">
+          <div className="bg-[hsl(var(--comic-green))] px-8 py-12 text-center border-b-4 border-black relative overflow-hidden">
+            <div className="w-20 h-20 bg-[hsl(var(--comic-beige))] border-4 border-black flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_0px_#000]">
+              <Receipt className="h-10 w-10 text-black stroke-[3px]" />
+            </div>
+            <DialogHeader>
+              <DialogTitle className="text-3xl font-black text-black tracking-tighter uppercase italic comic-text-stroke leading-none">{t('billCreated')}</DialogTitle>
+              <DialogDescription className="text-black font-black uppercase tracking-widest text-[9px] mt-3 italic">{t('chooseHowToShare')}</DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-8 space-y-6 bg-[hsl(var(--comic-beige))]">
+            <Button onClick={handlePrint} className="w-full h-18 border-4 border-black bg-[hsl(var(--comic-cyan))] text-black font-black text-lg uppercase shadow-[6px_6px_0px_0px_#000]">{t('printReceipt')}</Button>
+            <div className="grid grid-cols-2 gap-4">
+              <Button onClick={handleDownloadPDF} className="h-14 border-2 border-black bg-[hsl(var(--comic-beige))] text-black font-black uppercase text-[9px] shadow-[4px_4px_0px_0px_#000]">{t('downloadPDF')}</Button>
+              {navigator.share && (
+                <Button onClick={handleSharePDF} className="h-14 border-2 border-black bg-[hsl(var(--comic-beige))] text-black font-black uppercase text-[9px] shadow-[4px_4px_0px_0px_#000]">{t('share')}</Button>
+              )}
+            </div>
+            <Button variant="ghost" onClick={() => { resetBill(); setPrintDialogOpen(false); }} className="w-full font-black uppercase text-[10px] tracking-widest hover:text-black transition-colors">{t('done')}</Button>
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 };
 
