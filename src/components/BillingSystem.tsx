@@ -268,8 +268,8 @@ const BillingSystem: React.FC = () => {
                   return (
                     <div key={item.id} className={`group relative border-2 border-black p-2.5 transition-all flex flex-col justify-between ${qty > 0 ? 'bg-[hsl(var(--comic-pink))] translate-x-0.5 translate-y-0.5' : 'bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000]'}`}>
                       <div onClick={() => { if (!inBill) setBillItems([...billItems, { id: Date.now().toString(), item_id: item.id, item_name: item.name, quantity: 1, unit_price: item.price, total_price: item.price, unit: item.unit }]); }} className="cursor-pointer">
-                        <h4 className="text-[10px] font-black text-black uppercase italic leading-tight line-clamp-2">{item.name}</h4>
-                        <p className="text-[8px] font-black text-black/40 mt-1 uppercase tracking-widest">₹{item.price.toFixed(0)}/{item.unit}</p>
+                        <h4 className="text-sm font-bold text-black uppercase italic leading-tight line-clamp-2">{item.name}</h4>
+                        <p className="text-[9px] font-black text-black/50 mt-1 uppercase tracking-widest">₹{item.price.toFixed(0)}/{item.unit}</p>
                       </div>
                       <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-black/10">
                         {qty > 0 ? (
