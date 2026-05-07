@@ -199,29 +199,15 @@ const BillingSystem: React.FC = () => {
       <div className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto pb-24 lg:pb-8">
         {/* Sale Header */}
         <div className="flex items-center justify-between px-1 mb-6">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => window.history.back()}
-              className="flex items-center gap-2 text-black hover:bg-black/5 border-2 border-black shadow-[2px_2px_0px_0px_#000] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all h-10 px-4"
-            >
-              <Plus className="h-4 w-4 rotate-45 stroke-[3px]" />
-              <span className="font-black text-[10px] uppercase tracking-wider">{t('back')}</span>
-            </Button>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-black tracking-tighter flex items-center gap-2 italic uppercase comic-text-stroke leading-tight">
-                {t('saleTitle')}
-              </h2>
-            </div>
-          </div>
-          
-          <div className={`flex items-center gap-2 px-4 py-2 border-2 border-black font-black uppercase tracking-wider transition-all shadow-[3px_3px_0px_0px_#000] text-[10px] ${
+          <h2 className="text-4xl sm:text-5xl font-black text-black tracking-tighter italic uppercase comic-text-stroke leading-none">
+            {t('saleTitle')}
+          </h2>
+          <div className={`flex items-center gap-2 px-4 py-3 border-2 border-black font-black uppercase tracking-wider transition-all shadow-[3px_3px_0px_0px_#000] text-sm ${
             printerConnected 
               ? 'bg-[hsl(var(--comic-green))] text-black' 
               : 'bg-[hsl(var(--comic-beige))] text-black/40'
           }`}>
-            <Bluetooth className="h-4 w-4" />
+            <Bluetooth className="h-5 w-5" />
             <span className="hidden sm:inline">{printerConnected ? t('connected') : t('disconnected')}</span>
           </div>
         </div>
