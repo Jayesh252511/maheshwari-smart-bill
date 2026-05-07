@@ -199,7 +199,7 @@ const BillingSystem: React.FC = () => {
       <div className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto pb-24 lg:pb-8">
         {/* Sale Header */}
         <div className="flex items-center justify-between px-1 mb-6">
-          <h2 className="text-4xl sm:text-5xl font-black text-black tracking-tighter italic uppercase comic-text-stroke leading-none">
+          <h2 className="text-2xl font-black text-black tracking-tighter italic uppercase comic-text-stroke leading-none">
             {t('saleTitle')}
           </h2>
           <div className={`flex items-center gap-2 px-4 py-3 border-2 border-black font-black uppercase tracking-wider transition-all shadow-[3px_3px_0px_0px_#000] text-sm ${
