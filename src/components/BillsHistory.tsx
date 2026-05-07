@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Eye, Download, Share, Receipt, User, Edit, Printer, Trash2, Share2, MoreVertical } from 'lucide-react';
+import { Search, Eye, Download, Share, Receipt, User, Edit, Printer, Trash2, Share2, MoreVertical, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocalization } from '@/contexts/LocalizationContext';

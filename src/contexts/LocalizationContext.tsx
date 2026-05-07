@@ -159,7 +159,7 @@ const translations: Translations = {
   disconnected: { en: 'Disconnected', hi: 'डिस्कनेक्टेड', mr: 'डिस्कनेक्टेड' },
   selectCustomer: { en: 'Select a customer', hi: 'एक ग्राहक चुनें', mr: 'एक ग्राहक निवडा' },
   searchItemsPlaceholder: { en: 'Search items... e.g. ki', hi: 'वस्तुएं खोजें... उदा. की', mr: 'वस्तू शोधा... उदा. की' },
-  noItemsFound: { en: 'No items found', hi: 'कोई वस्तु नहीं मिली', mr: 'वस्तू सापडल्या नाहीत' },
+  
   selected: { en: 'Selected:', hi: 'चयनित:', mr: 'निवडलेले:' },
   qty: { en: 'Qty', hi: 'मात्रा', mr: 'प्रमाण' },
   rate: { en: 'Rate', hi: 'दर', mr: 'दर' },
@@ -200,7 +200,6 @@ const translations: Translations = {
   last3months: { en: 'Last 3 months', hi: 'पिछले 3 महीने', mr: 'मागील 3 महिने' },
   generateReport: { en: 'Generate Report', hi: 'रिपोर्ट बनाएं', mr: 'अहवाल तयार करा' },
   totalRevenue: { en: 'Total Revenue', hi: 'कुल राजस्व', mr: 'एकूण महसूल' },
-  totalItems: { en: 'Total Items', hi: 'कुल वस्तुएं', mr: 'एकूण वस्तू' },
   avgBillValue: { en: 'Avg Bill Value', hi: 'औसत बिल मूल्य', mr: 'सरासरी बिल मूल्य' },
   topCustomers: { en: 'Top Customers', hi: 'शीर्ष ग्राहक', mr: 'शीर्ष ग्राहक' },
   revenueBy: { en: 'Revenue by', hi: 'के अनुसार राजस्व', mr: 'नुसार महसूल' },
@@ -246,16 +245,7 @@ const translations: Translations = {
   download: { en: 'Download', hi: 'डाउनलोड', mr: 'डाउनलोड' },
   
   // Navigation
-  home: { en: 'Home', hi: 'होम', mr: 'होम' },
-  dashboard: { en: 'History', hi: 'इतिहास', mr: 'इतिहास' },
-  menu: { en: 'More', hi: 'और', mr: 'आणखी' },
-  
-  // App Titles
-  maheshwariAgencies: { en: 'DukanPay', hi: 'DukanPay', mr: 'DukanPay' },
-  billsAndReports: { en: 'Bills & Reports', hi: 'बिल और रिपोर्ट', mr: 'बिल आणि रिपोर्ट' },
-  
   // Settings Page
-  settings: { en: 'Settings', hi: 'सेटिंग्स', mr: 'सेटिंग्ज' },
   manageYourPreferences: { en: 'Manage your preferences', hi: 'अपनी प्राथमिकताएं प्रबंधित करें', mr: 'तुमची प्राधान्ये व्यवस्थापित करा' },
   profile: { en: 'Profile', hi: 'प्रोफ़ाइल', mr: 'प्रोफाइल' },
   personalInfo: { en: 'Personal Info', hi: 'व्यक्तिगत जानकारी', mr: 'वैयक्तिक माहिती' },
