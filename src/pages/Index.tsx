@@ -11,6 +11,8 @@ import BillsHistory from '@/components/BillsHistory';
 import Reports from '@/components/Reports';
 import AICustomerSupport from '@/components/AICustomerSupport';
 import SettingsManager from '@/components/SettingsManager';
+import UpgradePage from '@/components/UpgradePage';
+import FreeTierBanner from '@/components/FreeTierBanner';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -62,6 +64,8 @@ const Index = () => {
         return <AICustomerSupport />;
       case 'settings':
         return <SettingsManager />;
+      case 'upgrade':
+        return <UpgradePage />;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
@@ -99,6 +103,9 @@ const Index = () => {
             {t('back')}
           </Button>
         </div>
+      )}
+      {currentPage !== 'upgrade' && (
+        <FreeTierBanner onUpgrade={() => setCurrentPage('upgrade')} />
       )}
       {renderPage()}
     </Layout>

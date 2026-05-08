@@ -192,6 +192,42 @@ export type Database = {
         }
         Relationships: []
       }
+      device_usage: {
+        Row: {
+          bill_count: number
+          created_at: string
+          device_id: string
+          first_seen: string
+          id: string
+          last_email: string | null
+          last_seen: string
+          last_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bill_count?: number
+          created_at?: string
+          device_id: string
+          first_seen?: string
+          id?: string
+          last_email?: string | null
+          last_seen?: string
+          last_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bill_count?: number
+          created_at?: string
+          device_id?: string
+          first_seen?: string
+          id?: string
+          last_email?: string | null
+          last_seen?: string
+          last_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       items: {
         Row: {
           created_at: string
@@ -387,6 +423,26 @@ export type Database = {
         Returns: Json
       }
       can_perform_bill_action: { Args: { user_uuid: string }; Returns: boolean }
+      increment_device_bill_count: {
+        Args: { _device_id: string; _email: string; _user_id: string }
+        Returns: {
+          bill_count: number
+          created_at: string
+          device_id: string
+          first_seen: string
+          id: string
+          last_email: string | null
+          last_seen: string
+          last_user_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "device_usage"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       record_bill_action: {
         Args: {
           action_type_param: string

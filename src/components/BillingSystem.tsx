@@ -12,6 +12,7 @@ import { bluetoothPrinter } from '@/utils/bluetoothPrinter';
 import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill, BillItem, Customer, Item } from '@/types/bill';
 import { useLocalization } from '@/contexts/LocalizationContext';
+import { useFreeTierStatus } from '@/hooks/useFreeTierStatus';
 
 const BillingSystem: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -32,6 +33,7 @@ const BillingSystem: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { t } = useLocalization();
+  const freeTier = useFreeTierStatus();
 
   useEffect(() => {
     if (user) { fetchData(); checkPrinterConnection(); }
@@ -104,6 +106,10 @@ const BillingSystem: React.FC = () => {
   const saveBill = async (): Promise<Bill | null> => {
     if (!selectedCustomer) { toast.error(t('selectCustomer')); return null; }
     if (billItems.length === 0) { toast.error(t('addItems')); return null; }
+    if (!freeTier.isPro && freeTier.expired) {
+      toast.error('Free trial ended. Please upgrade to continue billing.');
+      return null;
+    }
     setSaving(true);
     try {
       const customer = customers.find(c => c.id === selectedCustomer);
@@ -123,6 +129,7 @@ const BillingSystem: React.FC = () => {
         items: billItems, subtotal, tax_amount: taxAmount, total_amount: total, status: 'completed', created_at: billData.created_at
       };
       toast.success(t('billSaved'));
+      freeTier.recordBill().catch(() => {});
       return bill;
     } catch { toast.error(t('failedToSaveBill')); return null; } finally { setSaving(false); }
   };
