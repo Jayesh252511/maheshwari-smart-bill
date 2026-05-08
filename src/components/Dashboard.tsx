@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill } from '@/types/bill';
+import WelcomeHero from '@/components/WelcomeHero';
 
 interface DashboardStats {
   items: number;
@@ -134,6 +135,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
   return (
     <div className="space-y-4">
+      <WelcomeHero onNavigate={onNavigate} stats={stats} />
       {/* Tabs */}
       <div className="flex gap-0 bg-muted rounded-full p-1">
         <button
