@@ -33,6 +33,7 @@ const BillingSystem: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { t } = useLocalization();
+  const freeTier = useFreeTierStatus();
 
   useEffect(() => {
     if (user) { fetchData(); checkPrinterConnection(); }
