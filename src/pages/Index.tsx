@@ -104,7 +104,7 @@ const Index = () => {
           </Button>
         </div>
       )}
-      {currentPage !== 'upgrade' && (
+      {currentPage !== 'upgrade' && currentPage !== 'dashboard' && (
         <FreeTierBanner onUpgrade={() => setCurrentPage('upgrade')} />
       )}
       {renderPage()}
