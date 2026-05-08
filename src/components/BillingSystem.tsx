@@ -129,6 +129,7 @@ const BillingSystem: React.FC = () => {
         items: billItems, subtotal, tax_amount: taxAmount, total_amount: total, status: 'completed', created_at: billData.created_at
       };
       toast.success(t('billSaved'));
+      freeTier.recordBill().catch(() => {});
       return bill;
     } catch { toast.error(t('failedToSaveBill')); return null; } finally { setSaving(false); }
   };
