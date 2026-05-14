@@ -90,6 +90,12 @@ const BillingSystem: React.FC = () => {
     ));
   };
 
+  const updateItemPrice = (itemId: string, newPrice: number) => {
+    setBillItems(prev => prev.map(bi =>
+      bi.item_id === itemId ? { ...bi, unit_price: newPrice, total_price: bi.quantity * newPrice } : bi
+    ));
+  };
+
   const removeItemFromBill = (itemId: string) => setBillItems(prev => prev.filter(bi => bi.item_id !== itemId));
 
   const calculateTotals = () => {
@@ -313,7 +319,16 @@ const BillingSystem: React.FC = () => {
                     <div key={item.id} className="flex justify-between items-center gap-3 p-2 border-2 border-black bg-[hsl(var(--comic-yellow))] shadow-[2px_2px_0px_0px_#000]">
                       <div className="min-w-0 flex-1">
                         <p className="text-[10px] font-black uppercase truncate leading-none mb-1">{item.item_name}</p>
-                        <p className="text-[8px] font-black text-black/40 uppercase">₹{item.unit_price} x {item.quantity}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="text-[10px] font-black text-black/40">₹</span>
+                          <input 
+                            type="number" 
+                            value={item.unit_price} 
+                            onChange={(e) => updateItemPrice(item.item_id, parseFloat(e.target.value) || 0)}
+                            className="w-14 h-5 border-2 border-black bg-white px-1 text-[10px] font-black focus:outline-none shadow-[1px_1px_0px_0px_#000]"
+                          />
+                          <span className="text-[10px] font-black text-black/40 uppercase ml-1">x {item.quantity}</span>
+                        </div>
                       </div>
                       <div className="text-right">
                         <p className="text-[10px] font-black font-mono italic leading-none mb-1">₹{item.total_price.toFixed(0)}</p>
