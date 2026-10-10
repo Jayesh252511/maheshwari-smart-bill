@@ -62,10 +62,21 @@ export function generateReceiptData(bill: any, businessInfo: any, t?: (key: stri
   receipt += billNo + padLeft('Date: ' + billDate, 32 - billNo.length) + LF;
   receipt += LF;
   
-  // Customer details (ALL BOLD) - left aligned
-  if (bill.customer_name) {
-    receipt += 'Cash' + LF;
-    receipt += 'Phone: ' + (bill.customer_phone || '7020709696') + LF;
+  // Print the actual customer, not a payment label or the shop's phone number.
+  const customerName = String(bill.customer_name ?? '').trim();
+  if (customerName) {
+    receipt += BOLD_ON;
+    const customerLines = ('Customer: ' + customerName).match(/.{1,42}/gu) || [];
+    for (const line of customerLines) {
+      receipt += line + LF;
+    }
+    receipt += BOLD_OFF;
+  }
+  const customerPhone = String(bill.customer_phone ?? '').trim();
+  if (customerPhone) {
+    receipt += 'Phone: ' + customerPhone + LF;
+  }
+  if (customerName || customerPhone) {
     receipt += LF;
   }
   
