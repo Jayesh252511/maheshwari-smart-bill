@@ -452,6 +452,32 @@ export type Database = {
         }
         Returns: boolean
       }
+      save_bill_with_items: {
+        Args: {
+          p_bill_id?: string
+          p_customer_id: string
+          p_items: Json
+          p_tax_rate?: number
+        }
+        Returns: {
+          bill_number: string
+          created_at: string
+          customer_id: string
+          id: string
+          status: string
+          subtotal: number
+          tax_amount: number
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bills"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never

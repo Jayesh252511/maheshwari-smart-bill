@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import { downloadPDF, sharePDF } from '@/utils/pdfGenerator';
 import { Bill } from '@/types/bill';
 import WelcomeHero from '@/components/WelcomeHero';
+import BillDetails from '@/components/BillDetails';
+import BillEdit from '@/components/BillEdit';
 
 interface DashboardStats {
   items: number;
@@ -26,6 +28,9 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [stats, setStats] = useState<DashboardStats>({ items: 0, customers: 0, bills: 0, revenue: 0 });
   const [recentBills, setRecentBills] = useState<Bill[]>([]);
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [editingBill, setEditingBill] = useState<Bill | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'transactions' | 'parties'>('transactions');
@@ -46,6 +51,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         supabase.from('bills').select(`*, customers (name, phone, address), bill_items (*, items (name, unit))`).eq('user_id', user?.id).order('created_at', { ascending: false }).limit(20)
       ]);
 
+      for (const result of [itemsRes, customersRes, billsRes]) {
+        if (result.error) throw result.error;
+      }
       const revenue = billsRes.data?.reduce((sum, bill) => sum + Number(bill.total_amount), 0) || 0;
 
       setStats({
@@ -81,9 +89,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       setRecentBills(transformed);
     } catch (error) {
       console.error('Error fetching data:', error);
+      toast.error(t('failedToLoadBills'));
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteBill = async (id: string) => {
+    const { error } = await supabase.from('bills').delete().eq('id', id).eq('user_id', user?.id);
+    if (error) { toast.error(t('failedToDeleteBill')); return; }
+    setDetailsOpen(false);
+    setSelectedBill(null);
+    toast.success(t('billDeleted'));
+    await fetchData();
   };
 
   const handlePrint = async (bill: Bill) => {
@@ -204,7 +222,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </div>
             ) : (
               filteredBills.map((bill) => (
-                <div key={bill.id} className="border-2 border-black p-3 bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000] relative overflow-hidden transition-all hover:bg-black/[0.02]">
+                <div key={bill.id} role="button" tabIndex={0} aria-label={`${t('invoiceNo')} ${bill.bill_number}`}
+                  onClick={() => { setSelectedBill(bill); setDetailsOpen(true); }}
+                  onKeyDown={(event) => {
+                    if (event.target !== event.currentTarget) return;
+                    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedBill(bill); setDetailsOpen(true); }
+                  }} className="cursor-pointer border-2 border-black p-3 bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000] relative overflow-hidden transition-all hover:bg-black/[0.02]">
                   <div className="flex justify-between items-start mb-2">
                     <div className="min-w-0">
                       <h3 className="text-xs font-black text-black uppercase italic comic-text-stroke leading-none truncate pr-2">{bill.customer_name}</h3>
@@ -231,16 +254,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         <p className="text-sm font-black text-black font-mono leading-none italic">₹{bill.total_amount.toFixed(0)}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5" onClick={(event) => event.stopPropagation()}>
                       <button onClick={() => handlePrint(bill)} className="h-7 w-7 border-2 border-black bg-[hsl(var(--comic-yellow))] shadow-[1px_1px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
                         <Printer className="h-3.5 w-3.5 text-black" />
                       </button>
                       <button onClick={() => handleShare(bill)} className="h-7 w-7 border-2 border-black bg-[hsl(var(--comic-cyan))] shadow-[1px_1px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
                         <Share2 className="h-3.5 w-3.5 text-black" />
                       </button>
-                      <button onClick={() => onNavigate('bills')} className="h-7 w-7 border-2 border-black bg-[hsl(var(--comic-pink))] shadow-[1px_1px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
+                      <Button aria-label={t('editBill')} title={t('editBill')} onClick={() => setEditingBill(bill)} className="p-0 h-7 w-7 border-2 border-black bg-[hsl(var(--comic-pink))] shadow-[1px_1px_0px_0px_#000] active:shadow-none transition-all flex items-center justify-center">
                         <MoreVertical className="h-3.5 w-3.5 text-black" />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -264,6 +287,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           </Button>
         </div>
       )}
+
+      <BillDetails bill={selectedBill} open={detailsOpen} onOpenChange={setDetailsOpen}
+        onEdit={setEditingBill} onDelete={handleDeleteBill} />
+      {editingBill && <BillEdit key={editingBill.id} bill={editingBill} open={true}
+        onOpenChange={(open) => { if (!open) setEditingBill(null); }}
+        onBillUpdated={() => { setSelectedBill(null); void fetchData(); }} />}
 
       {/* Floating Add New Sale Button */}
       <Button 

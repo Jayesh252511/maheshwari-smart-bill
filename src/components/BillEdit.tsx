@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,30 +27,46 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
   const [billItems, setBillItems] = useState<BillItem[]>(bill.items);
   const [taxRate, setTaxRate] = useState<string>(((bill.tax_amount / (bill.subtotal || 1)) * 100).toFixed(1));
   const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const savingRef = useRef(false);
   const [itemSearch, setItemSearch] = useState('');
 
   useEffect(() => {
-    if (open && user) {
-      fetchCustomers();
-      fetchItems();
-    }
-  }, [open, user]);
-
-  const fetchCustomers = async () => {
-    try {
-      const { data, error } = await supabase.from('customers').select('*').eq('user_id', user?.id).order('name');
-      if (error) throw error;
-      setCustomers(data || []);
-    } catch { toast.error(t('failedToLoadCustomers')); }
-  };
-
-  const fetchItems = async () => {
-    try {
-      const { data, error } = await supabase.from('items').select('*').eq('user_id', user?.id).order('name');
-      if (error) throw error;
-      setItems(data || []);
-    } catch { toast.error(t('failedToLoadItems')); }
-  };
+    if (!open || !user) return;
+    let cancelled = false;
+    setSelectedCustomer(bill.customer_id);
+    setBillItems(bill.items.map(item => ({ ...item })));
+    setTaxRate(((bill.tax_amount / (bill.subtotal || 1)) * 100).toString());
+    setItemSearch('');
+    setDataLoading(true);
+    setLoadError(false);
+    const load = async () => {
+      try {
+        const [customerResult, itemResult, lineResult] = await Promise.all([
+          supabase.from('customers').select('*').eq('user_id', user.id).order('name'),
+          supabase.from('items').select('*').eq('user_id', user.id).order('name'),
+          supabase.from('bill_items').select('*, items(name, unit)').eq('bill_id', bill.id),
+        ]);
+        if (customerResult.error) throw customerResult.error;
+        if (itemResult.error) throw itemResult.error;
+        if (lineResult.error) throw lineResult.error;
+        if (cancelled) return;
+        setCustomers(customerResult.data || []);
+        setItems(itemResult.data || []);
+        setBillItems((lineResult.data || []).map(line => ({
+          id: line.id, item_id: line.item_id,
+          item_name: line.items?.name || bill.items.find(item => item.item_id === line.item_id)?.item_name || '',
+          unit: line.items?.unit || '', quantity: Number(line.quantity),
+          unit_price: Number(line.unit_price), total_price: Number(line.total_price),
+        })));
+      } catch (error) {
+        if (!cancelled) { setLoadError(true); toast.error(t('failedToLoadItems')); }
+      } finally { if (!cancelled) setDataLoading(false); }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, [open, user?.id, bill.id]);
 
   const filteredItems = useMemo(() => {
     if (!itemSearch.trim()) return items;
@@ -60,7 +76,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
 
   const addItem = () => {
     const newItem: BillItem = {
-      id: `temp_${Date.now()}`, item_id: '', item_name: '', quantity: 1,
+      id: `temp_${crypto.randomUUID()}`, item_id: '', item_name: '', quantity: 1,
       unit_price: 0, total_price: 0, unit: 'pcs'
     };
     setBillItems([...billItems, newItem]);
@@ -68,7 +84,10 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
 
   const updateBillItem = (index: number, field: keyof BillItem, value: any) => {
     const updatedItems = [...billItems];
-    const item = updatedItems[index];
+    const existing = updatedItems[index];
+    if (!existing) return;
+    const item = { ...existing };
+    updatedItems[index] = item;
     if (field === 'item_id') {
       const selectedItem = items.find(i => i.id === value);
       if (selectedItem) {
@@ -82,7 +101,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
       item.quantity = Math.max(0, parseInt(value) || 0);
       item.total_price = item.quantity * item.unit_price;
     } else if (field === 'unit_price') {
-      item.unit_price = parseFloat(value) || 0;
+      item.unit_price = Math.max(0, parseFloat(value) || 0);
       item.total_price = item.quantity * item.unit_price;
     } else {
       (item as any)[field] = value;
@@ -94,7 +113,7 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
 
   const calculateTotals = () => {
     const subtotal = billItems.reduce((sum, item) => sum + item.total_price, 0);
-    const taxAmount = subtotal * (parseFloat(taxRate) / 100);
+    const taxAmount = subtotal * ((parseFloat(taxRate) || 0) / 100);
     return { subtotal, tax_amount: taxAmount, total_amount: subtotal + taxAmount };
   };
 
@@ -103,20 +122,20 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
     if (billItems.length === 0 || billItems.some(item => !item.item_id)) {
       toast.error(t('addItems')); return;
     }
+    if (savingRef.current || dataLoading || loadError || !user) return;
+    if (billItems.some(item => item.quantity <= 0 || !Number.isFinite(item.unit_price))) {
+      toast.error(t('quantityMustBeGreater')); return;
+    }
+    savingRef.current = true;
     setLoading(true);
     try {
-      const { subtotal, tax_amount, total_amount } = calculateTotals();
-      const { error: billError } = await supabase.from('bills')
-        .update({ customer_id: selectedCustomer, subtotal, tax_amount, total_amount, updated_at: new Date().toISOString() })
-        .eq('id', bill.id);
-      if (billError) throw billError;
-
-      const { error: deleteError } = await supabase.from('bill_items').delete().eq('bill_id', bill.id);
-      if (deleteError) throw deleteError;
-
-      const { error: itemsError } = await supabase.from('bill_items')
-        .insert(billItems.map(item => ({ bill_id: bill.id, item_id: item.item_id, quantity: item.quantity, unit_price: item.unit_price, total_price: item.total_price })));
-      if (itemsError) throw itemsError;
+      const { error } = await supabase.rpc('save_bill_with_items', {
+        p_bill_id: bill.id,
+        p_customer_id: selectedCustomer,
+        p_tax_rate: parseFloat(taxRate) || 0,
+        p_items: billItems.map(item => ({ item_id: item.item_id, quantity: item.quantity, unit_price: item.unit_price })),
+      });
+      if (error) throw error;
 
       toast.success(t('billUpdated'));
       onOpenChange(false);
@@ -124,14 +143,14 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
     } catch (error) { 
       console.error('Update error:', error);
       toast.error(t('failedToUpdateBill')); 
-    } finally { setLoading(false); }
+    } finally { savingRef.current = false; setLoading(false); }
   };
 
   const { subtotal, tax_amount, total_amount } = calculateTotals();
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-2xl p-0 overflow-hidden border-4 border-black rounded-none shadow-[10px_10px_0px_0px_#000] bg-[hsl(var(--comic-beige))] flex flex-col max-h-[90vh]">
+    <Dialog open={open} onOpenChange={(value) => { if (!savingRef.current) onOpenChange(value); }}>
+      <DialogContent className="[&>button]:hidden max-w-[95vw] sm:max-w-2xl p-0 overflow-hidden border-4 border-black rounded-none shadow-[10px_10px_0px_0px_#000] bg-[hsl(var(--comic-beige))] flex flex-col max-h-[90vh]">
         <div className="bg-[hsl(var(--comic-green))] p-4 border-b-4 border-black">
           <DialogHeader>
             <div className="flex items-center justify-between">
@@ -143,20 +162,23 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
                   {t('invoiceNo')} #{bill.bill_number}
                 </DialogDescription>
               </div>
-              <button onClick={() => onOpenChange(false)} className="p-2 border-2 border-black bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000] active:shadow-none transition-all">
+              <Button variant="ghost" size="icon" aria-label={t('cancel')} disabled={loading} onClick={() => onOpenChange(false)} className="p-2 border-2 border-black bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000] active:shadow-none transition-all">
                 <X className="h-4 w-4 text-black" />
-              </button>
+              </Button>
             </div>
           </DialogHeader>
         </div>
 
-        <div className="p-4 overflow-y-auto comic-scrollbar space-y-4">
+        <div className="p-4 overflow-y-auto min-h-0 comic-scrollbar space-y-4">
+          {dataLoading && <p role="status" className="text-sm text-muted-foreground">{t('loading')}</p>}
+          {loadError && <p role="alert" className="text-sm text-destructive">{t('failedToLoadItems')}</p>}
+          <fieldset disabled={dataLoading || loading || loadError} className="space-y-4 min-w-0">
           {/* Customer Selection */}
           <div className="comic-card bg-[hsl(var(--comic-beige))] p-3 space-y-2">
             <Label className="text-[10px] font-black text-black uppercase tracking-widest italic">{t('customer')} *</Label>
             <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
               <SelectTrigger className="h-10 border-2 border-black rounded-none font-black text-xs focus:ring-0 shadow-[2px_2px_0px_0px_#000] bg-[hsl(var(--comic-beige))]">
-                <SelectValue placeholder={t('selectCustomer')} />
+                <SelectValue placeholder={t('selectCustomer')}>{customers.find(customer => customer.id === selectedCustomer)?.name || bill.customer_name}</SelectValue>
               </SelectTrigger>
               <SelectContent className="border-2 border-black rounded-none">
                 {customers.map(c => (
@@ -181,15 +203,18 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
 
             <div className="space-y-2">
               {billItems.map((billItem, index) => (
-                <div key={index} className="border-2 border-black p-2.5 bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000] flex flex-col gap-2">
+                <div key={billItem.id} className="border-2 border-black p-2.5 bg-[hsl(var(--comic-beige))] shadow-[2px_2px_0px_0px_#000] flex flex-col gap-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       <Select value={billItem.item_id} onValueChange={(v) => updateBillItem(index, 'item_id', v)}>
                         <SelectTrigger className="h-8 border-2 border-black rounded-none font-black text-[10px] uppercase focus:ring-0">
-                          <SelectValue placeholder={t('selectItem')} />
+                          <SelectValue placeholder={t('selectItem')}><span className="block truncate text-left">{billItem.item_name || t('selectItem')}</span></SelectValue>
                         </SelectTrigger>
                         <SelectContent className="border-2 border-black rounded-none">
-                          {items.map(item => (
+                          {billItem.item_id && !items.some(item => item.id === billItem.item_id) && (
+                            <SelectItem value={billItem.item_id}>{billItem.item_name || t('selectItem')}</SelectItem>
+                          )}
+                          {filteredItems.map(item => (
                             <SelectItem key={item.id} value={item.id} className="font-black text-[10px] uppercase">{item.name}</SelectItem>
                           ))}
                         </SelectContent>
@@ -285,13 +310,14 @@ const BillEdit: React.FC<BillEditProps> = ({ bill, open, onOpenChange, onBillUpd
             </Button>
             <Button
               onClick={handleUpdateBill}
-              disabled={loading || billItems.length === 0}
+              disabled={loading || dataLoading || loadError || billItems.length === 0}
               className="h-12 border-2 border-black rounded-none font-black text-[10px] uppercase bg-[hsl(var(--comic-green))] shadow-[3px_3px_0px_0px_#000] active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all"
             >
               {loading ? t('updating') : t('updateBill')}
             </Button>
           </div>
         </div>
+          </fieldset>
         </div>
       </DialogContent>
     </Dialog>
