@@ -15,6 +15,8 @@ const translations: Translations = {
   walkinCustomer: { en: 'Cash customer', hi: 'नकद ग्राहक', mr: 'रोख ग्राहक' },
   generateBill: { en: 'Generate bill', hi: 'बिल बनाएं', mr: 'बिल तयार करा' },
   done: { en: 'Done', hi: 'पूरा हुआ', mr: 'झाले' },
+  editBill: { en: 'Edit Bill', hi: 'बिल संपादित करें', mr: 'बिल संपादित करा' },
+  updateBill: { en: 'Update Bill', hi: 'बिल अपडेट करें', mr: 'बिल अपडेट करा' },
   // Common
   add: { en: 'Add', hi: 'जोड़ें', mr: 'जोडा' },
   edit: { en: 'Edit', hi: 'संपादित करें', mr: 'संपादित करा' },
