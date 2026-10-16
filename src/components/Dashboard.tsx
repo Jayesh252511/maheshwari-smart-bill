@@ -152,7 +152,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-32">
       <WelcomeHero onNavigate={onNavigate} stats={stats} />
       {/* Tabs */}
       <div className="flex gap-0 bg-muted rounded-full p-1">
