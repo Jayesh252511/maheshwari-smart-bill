@@ -11,6 +11,10 @@ interface Translations {
 }
 
 const translations: Translations = {
+  trialEnded: { en: 'Free trial ended. Please upgrade to continue billing.', hi: 'मुफ्त अवधि समाप्त हो गई। बिल बनाने के लिए अपग्रेड करें।', mr: 'मोफत कालावधी संपला. बिल तयार करण्यासाठी अपग्रेड करा.' },
+  walkinCustomer: { en: 'Cash customer', hi: 'नकद ग्राहक', mr: 'रोख ग्राहक' },
+  generateBill: { en: 'Generate bill', hi: 'बिल बनाएं', mr: 'बिल तयार करा' },
+  done: { en: 'Done', hi: 'पूरा हुआ', mr: 'झाले' },
   // Common
   add: { en: 'Add', hi: 'जोड़ें', mr: 'जोडा' },
   edit: { en: 'Edit', hi: 'संपादित करें', mr: 'संपादित करा' },

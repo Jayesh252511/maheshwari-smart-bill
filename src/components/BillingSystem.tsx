@@ -24,6 +24,7 @@ const BillingSystem: React.FC = () => {
   const [taxRate, setTaxRate] = useState<string>('0');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [currentBill, setCurrentBill] = useState<Bill | null>(null);
   const [printerConnected, setPrinterConnected] = useState(false);
@@ -100,49 +101,53 @@ const BillingSystem: React.FC = () => {
 
   const calculateTotals = () => {
     const subtotal = billItems.reduce((sum, item) => sum + item.total_price, 0);
-    const taxAmount = subtotal * (parseFloat(taxRate) / 100);
+    const taxAmount = subtotal * ((parseFloat(taxRate) || 0) / 100);
     return { subtotal, taxAmount, total: subtotal + taxAmount };
   };
 
-  const generateBillNumber = async () => {
-    const { data } = await supabase.from('bills').select('id', { count: 'exact' }).eq('user_id', user?.id);
-    return ((data?.length || 0) + 1).toString().padStart(2, '0');
-  };
-
   const saveBill = async (): Promise<Bill | null> => {
+    if (savingRef.current || !user) return null;
     if (!selectedCustomer) { toast.error(t('selectCustomer')); return null; }
     if (billItems.length === 0) { toast.error(t('addItems')); return null; }
+    if (freeTier.loading) { toast.info(t('loading')); return null; }
     if (!freeTier.isPro && freeTier.expired) {
-      toast.error('Free trial ended. Please upgrade to continue billing.');
-      return null;
+      toast.error(t('trialEnded')); return null;
     }
+    savingRef.current = true;
     setSaving(true);
     try {
       const customer = customers.find(c => c.id === selectedCustomer);
-      if (!customer) throw new Error('Customer not found');
-      const { subtotal, taxAmount, total } = calculateTotals();
-      const billNumber = await generateBillNumber();
-      const { data: billData, error: billError } = await supabase.from('bills')
-        .insert([{ user_id: user?.id, customer_id: selectedCustomer, bill_number: billNumber, subtotal, tax_amount: taxAmount, total_amount: total, status: 'completed' }])
-        .select().single();
-      if (billError) throw billError;
-      const { error: itemsError } = await supabase.from('bill_items')
-        .insert(billItems.map(item => ({ bill_id: billData.id, item_id: item.item_id, quantity: item.quantity, unit_price: item.unit_price, total_price: item.total_price })));
-      if (itemsError) throw itemsError;
+      if (!customer && selectedCustomer !== 'walkin') { toast.error(t('selectCustomer')); return null; }
+      const { data: billData, error } = await supabase.rpc('save_bill_with_items', {
+        p_customer_id: selectedCustomer === 'walkin' ? null : selectedCustomer,
+        p_tax_rate: parseFloat(taxRate) || 0,
+        p_items: billItems.map(item => ({ item_id: item.item_id, quantity: item.quantity, unit_price: item.unit_price })),
+      });
+      if (error) throw error;
+      if (!billData) throw new Error('Saved bill was not returned');
       const bill: Bill = {
-        id: billData.id, bill_number: billNumber, customer_id: selectedCustomer,
-        customer_name: customer.name, customer_phone: customer.phone, customer_address: customer.address,
-        items: billItems, subtotal, tax_amount: taxAmount, total_amount: total, status: 'completed', created_at: billData.created_at
+        id: billData.id, bill_number: billData.bill_number, customer_id: billData.customer_id,
+        customer_name: customer?.name || t('walkinCustomer'), customer_phone: customer?.phone, customer_address: customer?.address,
+        items: billItems.map(item => ({ ...item })), subtotal: Number(billData.subtotal),
+        tax_amount: Number(billData.tax_amount), total_amount: Number(billData.total_amount),
+        status: billData.status, created_at: billData.created_at,
       };
       toast.success(t('billSaved'));
-      freeTier.recordBill().catch(() => {});
+      void freeTier.recordBill().catch(error => console.error('Usage recording failed:', error));
       return bill;
-    } catch { toast.error(t('failedToSaveBill')); return null; } finally { setSaving(false); }
+    } catch (error) {
+      console.error('Bill save failed:', error);
+      toast.error(t('failedToSaveBill'));
+      return null;
+    } finally { savingRef.current = false; setSaving(false); }
   };
 
   const handleCheckout = async () => {
     const bill = await saveBill();
-    if (bill) { setCurrentBill(bill); setPrintDialogOpen(true); }
+    if (bill) {
+      setSelectedCustomer(''); setBillItems([]); setSelectedItem(''); setQuantity('0'); setTaxRate('0'); setItemSearch('');
+      setCurrentBill(bill); setPrintDialogOpen(true);
+    }
   };
 
   const handlePrint = async () => {
@@ -348,8 +353,8 @@ const BillingSystem: React.FC = () => {
                   <span className="text-xl font-mono">₹{total.toFixed(0)}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-2">
-                  <Button variant="ghost" onClick={resetBill} disabled={billItems.length === 0} className="h-10 border-2 border-black rounded-none font-black text-[10px] uppercase">{t('clear')}</Button>
-                  <Button onClick={handleCheckout} disabled={saving || billItems.length === 0 || !selectedCustomer} className="h-10 border-2 border-black rounded-none font-black text-[10px] uppercase bg-[hsl(var(--comic-green))] shadow-[2px_2px_0px_0px_#000]">{t('generateBill')}</Button>
+                  <Button variant="ghost" onClick={resetBill} disabled={saving || billItems.length === 0} className="h-10 border-2 border-black rounded-none font-black text-[10px] uppercase">{t('clear')}</Button>
+                  <Button onClick={handleCheckout} disabled={saving || billItems.length === 0 || !selectedCustomer} className="h-10 border-2 border-black rounded-none font-black text-[10px] uppercase bg-[hsl(var(--comic-green))] shadow-[2px_2px_0px_0px_#000]">{saving ? t('saving') : t('generateBill')}</Button>
                 </div>
               </div>
             </div>
@@ -360,10 +365,10 @@ const BillingSystem: React.FC = () => {
         </div>
       </div>
 
-      <Dialog open={printDialogOpen} onOpenChange={setPrintDialogOpen}>
-        <DialogContent className="sm:max-w-lg p-0 overflow-hidden border-4 border-black rounded-none shadow-[12px_12px_0px_0px_#000] bg-[hsl(var(--comic-beige))]">
-          <div className="bg-[hsl(var(--comic-green))] px-8 py-12 text-center border-b-4 border-black relative overflow-hidden">
-            <div className="w-20 h-20 bg-[hsl(var(--comic-beige))] border-4 border-black flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_0px_#000]">
+      <Dialog open={printDialogOpen} onOpenChange={(open) => { setPrintDialogOpen(open); if (!open) resetBill(); }}>
+        <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90dvh] overflow-y-auto p-0 border-4 border-black rounded-none shadow-[12px_12px_0px_0px_#000] bg-[hsl(var(--comic-beige))]">
+          <div className="bg-[hsl(var(--comic-green))] px-5 py-5 sm:px-8 sm:py-8 text-center border-b-4 border-black relative overflow-hidden">
+            <div className="w-12 h-12 bg-[hsl(var(--comic-beige))] border-4 border-black flex items-center justify-center mx-auto mb-3 shadow-[4px_4px_0px_0px_#000]">
               <Receipt className="h-10 w-10 text-black stroke-[3px]" />
             </div>
             <DialogHeader>
@@ -371,7 +376,7 @@ const BillingSystem: React.FC = () => {
               <DialogDescription className="text-black font-black uppercase tracking-widest text-[9px] mt-3 italic">{t('chooseHowToShare')}</DialogDescription>
             </DialogHeader>
           </div>
-          <div className="p-8 space-y-6 bg-[hsl(var(--comic-beige))]">
+          <div className="p-5 sm:p-8 space-y-4 bg-[hsl(var(--comic-beige))]">
             <Button onClick={handlePrint} className="w-full h-18 border-4 border-black bg-[hsl(var(--comic-cyan))] text-black font-black text-lg uppercase shadow-[6px_6px_0px_0px_#000]">{t('printReceipt')}</Button>
             <div className="grid grid-cols-2 gap-4">
               <Button onClick={handleDownloadPDF} className="h-14 border-2 border-black bg-[hsl(var(--comic-beige))] text-black font-black uppercase text-[9px] shadow-[4px_4px_0px_0px_#000]">{t('downloadPDF')}</Button>
