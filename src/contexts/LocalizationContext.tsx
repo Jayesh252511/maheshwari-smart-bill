@@ -17,6 +17,7 @@ const translations: Translations = {
   done: { en: 'Done', hi: 'पूरा हुआ', mr: 'झाले' },
   editBill: { en: 'Edit Bill', hi: 'बिल संपादित करें', mr: 'बिल संपादित करा' },
   updateBill: { en: 'Update Bill', hi: 'बिल अपडेट करें', mr: 'बिल अपडेट करा' },
+  noItemsInBill: { en: 'No items in bill', hi: 'बिल में कोई वस्तु नहीं', mr: 'बिलात कोणतीही वस्तू नाही' },
   // Common
   add: { en: 'Add', hi: 'जोड़ें', mr: 'जोडा' },
   edit: { en: 'Edit', hi: 'संपादित करें', mr: 'संपादित करा' },
